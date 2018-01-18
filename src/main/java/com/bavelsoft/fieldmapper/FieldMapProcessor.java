@@ -92,11 +92,12 @@ public class FieldMapProcessor extends AbstractProcessor {
 	}
 
 	private MethodSpec.Builder getMethod(ExecutableElement methodElement) {
+		//TODO split up this method?
 		FieldMap annotation = methodElement.getAnnotation(FieldMap.class);
 		BiFunction<Collection<String>,Collection<String>,Map<String,String>> match = classValue(annotation::match);
-		TypeMirror dstType = methodElement.getReturnType();
+		TypeMirror dstType = returnType(methodElement);
 		Map<String, Element> dstFields = getFields(dstType);
-		TypeMirror srcType = methodElement.getParameters().get(0).asType();
+		TypeMirror srcType = paramType(methodElement);
 		Map<String, Element> srcFields = getFields(srcType);
 		Map<String, String> matchedFields;
 		try {
@@ -136,7 +137,7 @@ public class FieldMapProcessor extends AbstractProcessor {
 			return "";
 		for (Element e : elementUtils.getAllMembers(element))
 			if (e.getKind() == ElementKind.METHOD)
-				if (srcType.equals(paramType(e)) && dstType.equals(returnType(e)))
+				if (srcType.equals(paramType(e)) && dstType.equals(returnType(e))) //TODO make this extensible, e.g. SBE mapping
 					return e.getSimpleName().toString();
 		return "";
 	}
