@@ -201,6 +201,7 @@ TODOs
 optimize
 map a single field
 map a single field from nested path
+nullmapper
 warn of unmapped fields taking singe field overrides into account
 unambiguously name inner class interface
 inheritance
