@@ -1,0 +1,14 @@
+unit tests!
+TODOs
+optimize
+map a single field
+map a single field from nested path
+nullmapper
+warn of unmapped fields taking singe field overrides into account
+unambiguously name inner class interface
+inheritance
+map fields instead of methods
+generated class as abstract if we don't implement all methods
+annotations for primitives separately
+annotations for primitive wrappers separately
+annotations for enums separately

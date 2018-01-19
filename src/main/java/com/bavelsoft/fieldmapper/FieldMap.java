@@ -8,6 +8,8 @@ import java.util.Map;
 
 @Target(value={ElementType.METHOD})
 public @interface FieldMap {
+	static String DST = "dst", SRC = "src", DST_FIELD = "dstField", SRC_FIELD = "srcField", DST_TYPE = "dstType", FUNC = "func";
+
 	static String firstCode = "${dstType} ${dst} = new ${dstType}()";
 	String first() default firstCode;
 

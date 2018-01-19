@@ -48,7 +48,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import com.google.auto.service.AutoService;
-import org.apache.commons.text.StrSubstitutor;
 
 @AutoService(Processor.class)
 public class FieldMapProcessor extends AbstractProcessor {
@@ -66,9 +65,12 @@ public class FieldMapProcessor extends AbstractProcessor {
 
 	@Override
 	public boolean process(Set<? extends TypeElement> annotationsParam, RoundEnvironment env) {
-		for (Element element : env.getElementsAnnotatedWith(FieldMap.class)) {
+		Set<Element> elements = new HashSet<>();
+		for (Element element : env.getElementsAnnotatedWith(FieldMap.class))
+			elements.add(element.getEnclosingElement());
+		for (Element element : elements) {
 			try {
-				process(element);
+				write(element, getType(element).build());
 			} catch (IOException e) {
                         	throw new RuntimeException(e);
                 	}
@@ -76,12 +78,7 @@ public class FieldMapProcessor extends AbstractProcessor {
 		return true;
 	}
 
-	private void process(Element methodElement) throws IOException {
-		write(methodElement.getEnclosingElement(), getType(methodElement).build());
-	}
-
-	private TypeSpec.Builder getType(Element methodElement) {
-		Element element = methodElement.getEnclosingElement();
+	private TypeSpec.Builder getType(Element element) {
 		TypeSpec.Builder type = TypeSpec.classBuilder(getClassName(element))
 			.addSuperinterface(TypeName.get(element.asType()));
 		
@@ -92,14 +89,22 @@ public class FieldMapProcessor extends AbstractProcessor {
 	}
 
 	private MethodSpec.Builder getMethod(ExecutableElement methodElement) {
-		//TODO split up this method?
 		FieldMap annotation = methodElement.getAnnotation(FieldMap.class);
-		BiFunction<Collection<String>,Collection<String>,Map<String,String>> match = classValue(annotation::match);
-		TypeMirror dstType = returnType(methodElement);
-		Map<String, Element> dstFields = getFields(dstType);
-		TypeMirror srcType = paramType(methodElement);
-		Map<String, Element> srcFields = getFields(srcType);
+		MethodTemplate template = new MethodTemplate(methodElement, elementUtils);
+
+		MethodSpec.Builder method = MethodSpec.overriding(methodElement)
+			.addStatement(template.replace(annotation.first()));
+
+		for (Map.Entry<String, String> entry : getMatchedFields(annotation, template.dstFields, template.srcFields)) {
+			template.setPerFieldValues(entry);
+			method.addStatement(template.replace(annotation.perField()));
+		}
+		return method.addStatement(template.replace(annotation.last()));
+	}
+
+	private Set<Map.Entry<String, String>> getMatchedFields(FieldMap annotation, Map<String, Element> dstFields, Map<String, Element> srcFields) {
 		Map<String, String> matchedFields;
+		BiFunction<Collection<String>,Collection<String>,Map<String,String>> match = classValue(annotation::match);
 		try {
 			matchedFields = match.apply(dstFields.keySet(), srcFields.keySet());
 		} catch (Exception e) {
@@ -107,75 +112,9 @@ public class FieldMapProcessor extends AbstractProcessor {
 			throw e;
 		}
 		//TODO nice reporting of unmapped fields
-
-		MethodSpec.Builder method = MethodSpec.overriding(methodElement);
-		Map<String,String> map = new HashMap<>();
-		map.put("src", "src"); //TODO sync this with the method signature
-		map.put("dst", "dst");
-		map.put("dstType", dstType.toString());
-		StrSubstitutor sub = new StrSubstitutor(map);
-		method.addStatement(replace(sub, annotation.first()));
-		for (String dstField : matchedFields.keySet()) {
-			String srcField = matchedFields.get(dstField);
-			TypeElement element = (TypeElement)methodElement.getEnclosingElement();
-			String func = mapMethod(element, dstFields.get(dstField), srcFields.get(srcField));
-			map.put("srcField", srcField);
-			map.put("dstField", dstField);
-			map.put("func", func);
-			method.addStatement(replace(sub, annotation.perField()));
-		}
-		method.addStatement(replace(sub, annotation.last()));
-		return method;
+		return matchedFields.entrySet();
 	}
 
-	private String mapMethod(TypeElement element, Element dstField, Element srcField) {
-		//TODO use less exact map method
-		//TODO complain of ambiguous map method
-		TypeMirror srcType = returnType(srcField);
-		TypeMirror dstType = paramType(dstField);
-		if (srcType == null || dstType == null)
-			return "";
-		for (Element e : elementUtils.getAllMembers(element))
-			if (e.getKind() == ElementKind.METHOD)
-				if (srcType.equals(paramType(e)) && dstType.equals(returnType(e))) //TODO make this extensible, e.g. SBE mapping
-					return e.getSimpleName().toString();
-		return "";
-	}
-
-	private TypeMirror paramType(Element e) {
-		ExecutableElement ee = (ExecutableElement)e;
-		return ee.getParameters().size() == 1 ? ee.getParameters().get(0).asType() : null;
-	}
-
-	private TypeMirror returnType(Element e) {
-		ExecutableElement ee = (ExecutableElement)e;
-		return ee.getReturnType();
-	}
-
-	private Element asElement(TypeMirror t) {
-		if (t instanceof DeclaredType)
-			return ((DeclaredType)t).asElement();
-		else
-			return null;
-	}
-
-	private String replace(StrSubstitutor sub, String text) {
-		try {
-			return sub.replace(text);
-		} catch (Exception e) {
-			fatal("couldn't replace: "+text);
-			throw e;
-		}
-	}
-
-	private Map<String,Element> getFields(TypeMirror typeMirror) {
-		Map<String,Element> fields = new HashMap<>();
-		TypeElement element = (TypeElement)asElement(typeMirror);
-		for (Element fieldElement : elementUtils.getAllMembers(element))
-			fields.put(fieldElement.getSimpleName().toString(), fieldElement); //TODO overloading!
-		return fields;
-	}
-	
 	private <T> T classValue(Supplier<Class<T>> f) {
 		String className;
 		try {
@@ -196,22 +135,6 @@ public class FieldMapProcessor extends AbstractProcessor {
 	private void fatal(String s) { //TODO throwing the exception could be breaking this
 		messager.printMessage(Diagnostic.Kind.ERROR, s);
 	}
-/*
-unit tests!
-TODOs
-optimize
-map a single field
-map a single field from nested path
-nullmapper
-warn of unmapped fields taking singe field overrides into account
-unambiguously name inner class interface
-inheritance
-map fields instead of methods
-generated class as abstract if we don't implement all methods
-annotations for primitives separately
-annotations for primitive wrappers separately
-annotations for enums separately
-*/
 
 	private void write(Element element, TypeSpec typeSpec) throws IOException {
 		String packageName = elementUtils.getPackageOf(element).toString();
