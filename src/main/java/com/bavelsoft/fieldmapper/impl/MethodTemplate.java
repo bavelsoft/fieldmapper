@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper;
+package com.bavelsoft.fieldmapper.impl;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -8,8 +8,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
-import org.apache.commons.text.StrSubstitutor;
 import javax.lang.model.type.TypeMirror;
+import org.apache.commons.text.StrSubstitutor;
+import com.bavelsoft.fieldmapper.FieldMap;
 
 class MethodTemplate {
 	final Map<String, Element> dstFields;
@@ -43,8 +44,7 @@ class MethodTemplate {
 		try {
 			return sub.replace(text);
 		} catch (Exception e) {
-			//fatal("couldn't replace: "+text); TODO
-			throw e;
+			throw new RuntimeException("couldn't replace: "+text);
 		}
 	}
 

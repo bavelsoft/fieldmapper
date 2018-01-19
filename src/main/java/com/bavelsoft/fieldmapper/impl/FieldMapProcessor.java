@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper;
+package com.bavelsoft.fieldmapper.impl;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.disjoint;
@@ -48,6 +48,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import com.google.auto.service.AutoService;
+import com.bavelsoft.fieldmapper.FieldMap;
+import com.bavelsoft.fieldmapper.Field;
 
 @AutoService(Processor.class)
 public class FieldMapProcessor extends AbstractProcessor {
@@ -70,25 +72,25 @@ public class FieldMapProcessor extends AbstractProcessor {
 			elements.add(element.getEnclosingElement());
 		for (Element element : elements) {
 			try {
-				write(element, getType(element).build());
-			} catch (IOException e) {
-                        	throw new RuntimeException(e);
-                	}
+				write(element, generateMapperClass(element).build());
+			} catch (Exception e) {
+				fatal("couldn't generate field mapper for "+element+" : "+ e.getMessage());
+                	} 
 		}
 		return true;
 	}
 
-	private TypeSpec.Builder getType(Element element) {
+	private TypeSpec.Builder generateMapperClass(Element element) {
 		TypeSpec.Builder type = TypeSpec.classBuilder(getClassName(element))
 			.addSuperinterface(TypeName.get(element.asType()));
 		
 		for (Element e : elementUtils.getAllMembers((TypeElement)element))
 			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(FieldMap.class) != null)
-				type.addMethod(getMethod((ExecutableElement)e).build());
+				type.addMethod(generateMapperMethod((ExecutableElement)e).build());
 		return type;
 	}
 
-	private MethodSpec.Builder getMethod(ExecutableElement methodElement) {
+	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
 		FieldMap annotation = methodElement.getAnnotation(FieldMap.class);
 		MethodTemplate template = new MethodTemplate(methodElement, elementUtils);
 
@@ -104,7 +106,7 @@ public class FieldMapProcessor extends AbstractProcessor {
 
 	private Set<Map.Entry<String, String>> getMatchedFields(FieldMap annotation, Map<String, Element> dstFields, Map<String, Element> srcFields) {
 		Map<String, String> matchedFields;
-		BiFunction<Collection<String>,Collection<String>,Map<String,String>> match = classValue(annotation::match);
+		BiFunction<Collection<String>,Collection<String>,Map<String,String>> match = Util.classValue(annotation::match);
 		try {
 			matchedFields = match.apply(dstFields.keySet(), srcFields.keySet());
 		} catch (Exception e) {
@@ -115,24 +117,7 @@ public class FieldMapProcessor extends AbstractProcessor {
 		return matchedFields.entrySet();
 	}
 
-	private <T> T classValue(Supplier<Class<T>> f) {
-		String className;
-		try {
-			Class<T> clazz = f.get();
-			className = clazz.getCanonicalName();
-		} catch (MirroredTypeException mte) {
-			DeclaredType classTypeMirror = (DeclaredType) mte.getTypeMirror();
-			TypeElement classTypeElement = (TypeElement) classTypeMirror.asElement();
-			className = classTypeElement.getQualifiedName().toString();
-		}
-		try {
-			return (T)Class.forName(className).newInstance();
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private void fatal(String s) { //TODO throwing the exception could be breaking this
+	private void fatal(String s) {
 		messager.printMessage(Diagnostic.Kind.ERROR, s);
 	}
 
