@@ -12,6 +12,15 @@ public class MyTest {
 		default int doo(int i) { return i*2; }
 	}
 
+	public interface Moo {
+		@FieldMap
+		MyDst f(MySrc src);
+
+		void g();
+
+		default int doo(int i) { return i*2; }
+	}
+
 	static class MySrc {
 		int getX() { return 123; }
 	}

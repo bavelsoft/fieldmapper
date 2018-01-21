@@ -5,10 +5,6 @@ import static java.util.Collections.disjoint;
 import static java.util.stream.Collectors.toSet;
 import static javax.lang.model.type.TypeKind.VOID;
 import static javax.tools.StandardLocation.CLASS_OUTPUT;
-import static javax.lang.model.element.Modifier.PRIVATE;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.NATIVE;
 
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeName;
@@ -39,14 +35,15 @@ import javax.tools.Diagnostic;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.util.Elements;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.MirroredTypeException;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.TypeMirror;
 import com.google.auto.service.AutoService;
 import com.bavelsoft.fieldmapper.FieldMap;
 import com.bavelsoft.fieldmapper.Field;
@@ -84,10 +81,25 @@ public class FieldMapProcessor extends AbstractProcessor {
 		TypeSpec.Builder type = TypeSpec.classBuilder(getClassName(element))
 			.addSuperinterface(TypeName.get(element.asType()));
 		
-		for (Element e : elementUtils.getAllMembers((TypeElement)element))
-			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(FieldMap.class) != null)
+		boolean hasUnimplemented = false;
+		for (Element e : elementUtils.getAllMembers((TypeElement)element)) {
+			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(FieldMap.class) != null) {
 				type.addMethod(generateMapperMethod((ExecutableElement)e).build());
+			} else if (e.getKind() == ElementKind.METHOD && isAbstract(element, e)) {
+				hasUnimplemented = true;
+			}
+		}
+		if (hasUnimplemented)
+			type.addModifiers(Modifier.ABSTRACT);
 		return type;
+	}
+
+	private boolean isAbstract(Element element, Element method) {
+		Set<Modifier> modifiers = method.getModifiers();
+		if (element.getKind() == ElementKind.INTERFACE)
+			return !modifiers.contains(Modifier.STATIC) && !!modifiers.contains(Modifier.DEFAULT);
+		else
+			return modifiers.contains(Modifier.ABSTRACT);
 	}
 
 	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
