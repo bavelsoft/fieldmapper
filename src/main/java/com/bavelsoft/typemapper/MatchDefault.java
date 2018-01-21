@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper;
+package com.bavelsoft.typemapper;
 
 import java.util.function.BiFunction;
 import java.util.Collection;

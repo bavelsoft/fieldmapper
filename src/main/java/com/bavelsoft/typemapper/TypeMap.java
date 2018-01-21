@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper;
+package com.bavelsoft.typemapper;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 
 @Target(value={ElementType.METHOD})
-public @interface FieldMap {
+public @interface TypeMap {
 	static String DST = "dst", SRC = "src", DST_FIELD = "dstField", SRC_FIELD = "srcField", DST_TYPE = "dstType", FUNC = "func";
 
 	static String firstCode = "${dstType} ${dst} = new ${dstType}()";

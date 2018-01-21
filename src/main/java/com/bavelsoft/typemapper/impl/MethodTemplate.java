@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper.impl;
+package com.bavelsoft.typemapper.impl;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.type.TypeMirror;
 import org.apache.commons.text.StrSubstitutor;
-import com.bavelsoft.fieldmapper.FieldMap;
+import com.bavelsoft.typemapper.TypeMap;
 
 class MethodTemplate {
 	final Map<String, Element> dstFields;
@@ -27,17 +27,17 @@ class MethodTemplate {
 		this.elementUtils = elementUtils;
 		this.dstFields = getFields(dstType);
 		this.srcFields = getFields(srcType);
-		map.put(FieldMap.SRC, "src"); //TODO sync this with the method signature
-		map.put(FieldMap.DST, "dst");
-		map.put(FieldMap.DST_TYPE, dstType.toString());
+		map.put(TypeMap.SRC, "src"); //TODO sync this with the method signature
+		map.put(TypeMap.DST, "dst");
+		map.put(TypeMap.DST_TYPE, dstType.toString());
 	}
 
 	void setPerFieldValues(Map.Entry<String, String> entry) {
-		map.put(FieldMap.DST_FIELD, entry.getKey());
-		map.put(FieldMap.SRC_FIELD, entry.getValue());
+		map.put(TypeMap.DST_FIELD, entry.getKey());
+		map.put(TypeMap.SRC_FIELD, entry.getValue());
 		TypeMirror dstType = Util.paramType(dstFields.get(entry.getKey()));
 		TypeMirror srcType = Util.returnType(srcFields.get(entry.getValue()));
-		map.put(FieldMap.FUNC, mapMethod(dstType, srcType, methodElement));
+		map.put(TypeMap.FUNC, mapMethod(dstType, srcType, methodElement));
 	}
 
 	String replace(String text) {

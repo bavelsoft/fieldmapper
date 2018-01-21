@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper;
+package com.bavelsoft.typemapper;
   
 //TODO
 public class NullMapper {

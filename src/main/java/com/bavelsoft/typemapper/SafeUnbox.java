@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper;
+package com.bavelsoft.typemapper;
   
 public interface SafeUnbox {
 	default double map(Double x) { return x == null ? 0 : x; }

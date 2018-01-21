@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper.impl;
+package com.bavelsoft.typemapper.impl;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Element;

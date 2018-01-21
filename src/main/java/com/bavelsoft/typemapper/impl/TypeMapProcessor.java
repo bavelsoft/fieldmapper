@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper.impl;
+package com.bavelsoft.typemapper.impl;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.disjoint;
@@ -45,11 +45,11 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import com.google.auto.service.AutoService;
-import com.bavelsoft.fieldmapper.FieldMap;
-import com.bavelsoft.fieldmapper.Field;
+import com.bavelsoft.typemapper.TypeMap;
+import com.bavelsoft.typemapper.Field;
 
 @AutoService(Processor.class)
-public class FieldMapProcessor extends AbstractProcessor {
+public class TypeMapProcessor extends AbstractProcessor {
 	private Messager messager;
 	private Elements elementUtils;
 	private Filer filer;
@@ -65,7 +65,7 @@ public class FieldMapProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotationsParam, RoundEnvironment env) {
 		Set<Element> elements = new HashSet<>();
-		for (Element element : env.getElementsAnnotatedWith(FieldMap.class))
+		for (Element element : env.getElementsAnnotatedWith(TypeMap.class))
 			elements.add(element.getEnclosingElement());
 		for (Element element : elements) {
 			try {
@@ -83,7 +83,7 @@ public class FieldMapProcessor extends AbstractProcessor {
 		
 		boolean hasUnimplemented = false;
 		for (Element e : elementUtils.getAllMembers((TypeElement)element)) {
-			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(FieldMap.class) != null) {
+			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(TypeMap.class) != null) {
 				type.addMethod(generateMapperMethod((ExecutableElement)e).build());
 			} else if (e.getKind() == ElementKind.METHOD && isAbstract(element, e)) {
 				hasUnimplemented = true;
@@ -103,7 +103,7 @@ public class FieldMapProcessor extends AbstractProcessor {
 	}
 
 	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
-		FieldMap annotation = methodElement.getAnnotation(FieldMap.class);
+		TypeMap annotation = methodElement.getAnnotation(TypeMap.class);
 		MethodTemplate template = new MethodTemplate(methodElement, elementUtils);
 
 		MethodSpec.Builder method = MethodSpec.overriding(methodElement)
@@ -116,7 +116,7 @@ public class FieldMapProcessor extends AbstractProcessor {
 		return method.addStatement(template.replace(annotation.last()));
 	}
 
-	private Set<Map.Entry<String, String>> getMatchedFields(FieldMap annotation, Map<String, Element> dstFields, Map<String, Element> srcFields) {
+	private Set<Map.Entry<String, String>> getMatchedFields(TypeMap annotation, Map<String, Element> dstFields, Map<String, Element> srcFields) {
 		Map<String, String> matchedFields;
 		BiFunction<Collection<String>,Collection<String>,Map<String,String>> match = Util.classValue(annotation::match);
 		try {
@@ -143,12 +143,12 @@ public class FieldMapProcessor extends AbstractProcessor {
 	}
 
 	private String getClassName(Element element) {
-		return element.getSimpleName().toString() + "FieldMapper";
+		return element.getSimpleName().toString() + "TypeMapper";
 	}
 
 	@Override
 	public Set<String> getSupportedAnnotationTypes() {
-		return annotationTypesForClasses(FieldMap.class);
+		return annotationTypesForClasses(TypeMap.class);
 	}
 
 	private Set<String> annotationTypesForClasses(Class<?>... classes) {

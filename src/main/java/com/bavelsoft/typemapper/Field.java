@@ -1,4 +1,4 @@
-package com.bavelsoft.fieldmapper;
+package com.bavelsoft.typemapper;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
