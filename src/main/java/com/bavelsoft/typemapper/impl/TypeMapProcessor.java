@@ -71,7 +71,8 @@ public class TypeMapProcessor extends AbstractProcessor {
 			try {
 				write(element, generateMapperClass(element).build());
 			} catch (Exception e) {
-				fatal("couldn't generate field mapper for "+element+" : "+ e.getMessage());
+				messager.printMessage(Diagnostic.Kind.ERROR,
+						      "couldn't generate field mapper for "+element+" : "+ e.getMessage());
                 	} 
 		}
 		return true;
@@ -122,15 +123,10 @@ public class TypeMapProcessor extends AbstractProcessor {
 		try {
 			matchedFields = match.apply(dstFields.keySet(), srcFields.keySet());
 		} catch (Exception e) {
-			fatal("couldn't match");
-			throw e;
+			throw new RuntimeException("couldn't match");
 		}
 		//TODO nice reporting of unmapped fields
 		return matchedFields.entrySet();
-	}
-
-	private void fatal(String s) {
-		messager.printMessage(Diagnostic.Kind.ERROR, s);
 	}
 
 	private void write(Element element, TypeSpec typeSpec) throws IOException {
