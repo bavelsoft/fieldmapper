@@ -1,11 +1,5 @@
 package com.bavelsoft.typemapper.impl;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.disjoint;
-import static java.util.stream.Collectors.toSet;
-import static javax.lang.model.type.TypeKind.VOID;
-import static javax.tools.StandardLocation.CLASS_OUTPUT;
-
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.ArrayTypeName;
@@ -53,6 +47,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 	private Messager messager;
 	private Elements elementUtils;
 	private Filer filer;
+	private Class typeMapClass = TypeMap.class;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment env) {
@@ -65,7 +60,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotationsParam, RoundEnvironment env) {
 		Set<Element> elements = new HashSet<>();
-		for (Element element : env.getElementsAnnotatedWith(TypeMap.class))
+		for (Element element : env.getElementsAnnotatedWith(typeMapClass))
 			elements.add(element.getEnclosingElement());
 		for (Element element : elements) {
 			try {
@@ -79,12 +74,15 @@ public class TypeMapProcessor extends AbstractProcessor {
 	}
 
 	private TypeSpec.Builder generateMapperClass(Element element) {
-		TypeSpec.Builder type = TypeSpec.classBuilder(getClassName(element))
-			.addSuperinterface(TypeName.get(element.asType()));
+		TypeSpec.Builder type = TypeSpec.classBuilder(getClassName(element));
+		if (element.getKind() == ElementKind.INTERFACE)
+			type.addSuperinterface(TypeName.get(element.asType()));
+		else
+			type.superclass(TypeName.get(element.asType()));
 		
 		boolean hasUnimplemented = false;
 		for (Element e : elementUtils.getAllMembers((TypeElement)element)) {
-			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(TypeMap.class) != null) {
+			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(typeMapClass) != null) {
 				type.addMethod(generateMapperMethod((ExecutableElement)e).build());
 			} else if (e.getKind() == ElementKind.METHOD && isAbstract(element, e)) {
 				hasUnimplemented = true;
@@ -104,7 +102,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 	}
 
 	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
-		TypeMap annotation = methodElement.getAnnotation(TypeMap.class);
+		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		MethodTemplate template = new MethodTemplate(methodElement, elementUtils);
 
 		MethodSpec.Builder method = MethodSpec.overriding(methodElement)
@@ -125,7 +123,6 @@ public class TypeMapProcessor extends AbstractProcessor {
 		} catch (Exception e) {
 			throw new RuntimeException("couldn't match");
 		}
-		//TODO nice reporting of unmapped fields
 		return matchedFields.entrySet();
 	}
 
@@ -139,16 +136,12 @@ public class TypeMapProcessor extends AbstractProcessor {
 	}
 
 	private String getClassName(Element element) {
-		return element.getSimpleName().toString() + "TypeMapper";
+		return element.getSimpleName().toString() + "TypeMapper"; //TODO make unambiguous for inner class
 	}
 
 	@Override
 	public Set<String> getSupportedAnnotationTypes() {
-		return annotationTypesForClasses(TypeMap.class);
-	}
-
-	private Set<String> annotationTypesForClasses(Class<?>... classes) {
-		return Arrays.stream(classes).map(c->c.getCanonicalName()).collect(toSet());
+		return Collections.singleton(tpeMapClass.getCanonicalName().toString());
 	}
 
 	@Override
