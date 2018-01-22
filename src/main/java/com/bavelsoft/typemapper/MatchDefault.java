@@ -8,6 +8,7 @@ import java.util.HashMap;
 public class MatchDefault implements BiFunction<Collection<String>, Collection<String>, Map<String, String>> {
 	@Override
 	public Map<String, String> apply(Collection<String> dstFields, Collection<String> srcFields) {
+		//TODO make it super lenient: chomp set from setters and then loosely match. check for ambiguity, unmatched
 		Map<String, String> map = new HashMap<>();
 		for (String dstField : dstFields) {
 			if (!dstField.startsWith("set"))
