@@ -1,7 +1,7 @@
 package com.bavelsoft.typemapper;
   
 //TODO rename
-public class NullMapper {  
+public class MapperDefault {  
 	default double map(Double x) { return x == null ? 0 : x; }
 	default float map(Float x) { return x == null ? 0 : x; }
 	default long map(Long x) { return x == null ? 0 : x; }
