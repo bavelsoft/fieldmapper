@@ -32,6 +32,10 @@ class MethodTemplate {
 		map.put(TypeMap.DST_TYPE, dstType.toString());
 	}
 
+	void setPerFieldValues(Map.Entry<String, String> entry, Element element) {
+		//TODO
+	}
+
 	void setPerFieldValues(Map.Entry<String, String> entry) {
 		map.put(TypeMap.DST_FIELD, entry.getKey());
 		map.put(TypeMap.SRC_FIELD, entry.getValue());
