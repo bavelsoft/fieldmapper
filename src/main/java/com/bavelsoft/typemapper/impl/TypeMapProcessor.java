@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -47,7 +48,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 	private Messager messager;
 	private Elements elementUtils;
 	private Filer filer;
-	private Class typeMapClass = TypeMap.class;
+	private Class<TypeMap> typeMapClass = TypeMap.class;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment env) {
@@ -141,7 +142,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 
 	@Override
 	public Set<String> getSupportedAnnotationTypes() {
-		return Collections.singleton(tpeMapClass.getCanonicalName().toString());
+		return Collections.singleton(typeMapClass.getCanonicalName().toString());
 	}
 
 	@Override
