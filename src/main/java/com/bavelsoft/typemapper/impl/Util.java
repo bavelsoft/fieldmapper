@@ -25,9 +25,9 @@ class Util {
 			Class<T> clazz = f.get();
 			className = clazz.getCanonicalName();
 		} catch (MirroredTypeException mte) {
+			//TODO should this work?
 			DeclaredType classTypeMirror = (DeclaredType) mte.getTypeMirror();
 			TypeElement classTypeElement = (TypeElement) classTypeMirror.asElement();
-			//TODO use only typemirror for mapper, and only separate module for matcher (and clear error message)
 			className = classTypeElement.getQualifiedName().toString();
 		}
 		try {

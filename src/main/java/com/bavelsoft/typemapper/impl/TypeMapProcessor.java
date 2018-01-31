@@ -2,9 +2,6 @@ package com.bavelsoft.typemapper.impl;
 
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.ArrayTypeName;
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import java.io.IOException;
@@ -15,7 +12,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.tools.FileObject;
@@ -29,12 +25,12 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.tools.Diagnostic;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.util.Elements;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.MirroredTypeException;
@@ -49,6 +45,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 	private Elements elementUtils;
 	private Filer filer;
 	private Class<TypeMap> typeMapClass = TypeMap.class;
+	private Class<Field> fieldClass = Field.class;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment env) {
@@ -96,13 +93,21 @@ public class TypeMapProcessor extends AbstractProcessor {
 
 	private boolean isAbstract(Element element, Element method) {
 		Set<Modifier> modifiers = method.getModifiers();
-		if (element.getKind() == ElementKind.INTERFACE)
-			return !modifiers.contains(Modifier.STATIC) && !!modifiers.contains(Modifier.DEFAULT);
+		if (method.getEnclosingElement().getKind() == ElementKind.INTERFACE)
+			return !modifiers.contains(Modifier.STATIC) && !modifiers.contains(Modifier.DEFAULT);
 		else
 			return modifiers.contains(Modifier.ABSTRACT);
 	}
 
 	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
+		for (AnnotationMirror mirror : elementUtils.getAllAnnotationMirrors(methodElement)) {
+//mirror.getAnnotationType()
+/*
+DeclaredType	getAnnotationType()
+Map<? extends ExecutableElement,? extends AnnotationValue>	getElementValues()
+*/
+		}
+
 		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		MethodTemplate template = new MethodTemplate(methodElement, elementUtils);
 
@@ -137,7 +142,10 @@ public class TypeMapProcessor extends AbstractProcessor {
 	}
 
 	private String getClassName(Element element) {
-		return element.getSimpleName().toString() + "TypeMapper"; //TODO make unambiguous for inner class
+		String name = element.getSimpleName().toString() + "TypeMapper";
+		if (element.getEnclosingElement().getKind() == ElementKind.CLASS)
+			name = element.getEnclosingElement().getSimpleName().toString() + "_" + name;
+		return name;
 	}
 
 	@Override

@@ -32,16 +32,16 @@ class MethodTemplate {
 		map.put(TypeMap.DST_TYPE, dstType.toString());
 	}
 
-	void setPerFieldValues(Map.Entry<String, String> entry, Element element) {
-		//TODO
+	void setPerFieldValues(Map.Entry<String, String> entry) {
+		setPerFieldValues(entry, null);
 	}
 
-	void setPerFieldValues(Map.Entry<String, String> entry) {
+	void setPerFieldValues(Map.Entry<String, String> entry, TypeElement element) {
 		map.put(TypeMap.DST_FIELD, entry.getKey());
 		map.put(TypeMap.SRC_FIELD, entry.getValue());
 		TypeMirror dstType = Util.paramType(dstFields.get(entry.getKey()));
 		TypeMirror srcType = Util.returnType(srcFields.get(entry.getValue()));
-		map.put(TypeMap.FUNC, mapMethod(dstType, srcType, methodElement));
+		map.put(TypeMap.FUNC, mapMethod(dstType, srcType, element));
 	}
 
 	String replace(String text) {
@@ -67,8 +67,9 @@ class MethodTemplate {
 			return null;
 	}
 
-	private String mapMethod(TypeMirror dstType, TypeMirror srcType, ExecutableElement methodElement) {
-		TypeElement element = (TypeElement)methodElement.getEnclosingElement();
+	private String mapMethod(TypeMirror dstType, TypeMirror srcType, TypeElement element) {
+		if (element == null)
+			element = (TypeElement)methodElement.getEnclosingElement();
 		//TODO use less exact map method
 		//TODO complain of ambiguous map method
 		if (srcType == null || dstType == null)
