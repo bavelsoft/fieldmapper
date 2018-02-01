@@ -82,7 +82,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 		for (Element e : elementUtils.getAllMembers((TypeElement)element)) {
 			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(typeMapClass) != null) {
 				type.addMethod(generateMapperMethod((ExecutableElement)e).build());
-			} else if (e.getKind() == ElementKind.METHOD && isAbstract(element, e)) {
+			} else if (e.getKind() == ElementKind.METHOD && isAbstract(e)) {
 				hasUnimplemented = true;
 			}
 		}
@@ -91,13 +91,17 @@ public class TypeMapProcessor extends AbstractProcessor {
 		return type;
 	}
 
-	private boolean isAbstract(Element element, Element method) {
+	private boolean isAbstract(Element method) {
 		Set<Modifier> modifiers = method.getModifiers();
 		if (method.getEnclosingElement().getKind() == ElementKind.INTERFACE)
 			return !modifiers.contains(Modifier.STATIC) && !modifiers.contains(Modifier.DEFAULT);
 		else
 			return modifiers.contains(Modifier.ABSTRACT);
 	}
+
+//TODO @Field support!
+
+//TODO multiple parameters
 
 	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
 		for (AnnotationMirror mirror : elementUtils.getAllAnnotationMirrors(methodElement)) {

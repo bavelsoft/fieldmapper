@@ -79,9 +79,15 @@ class MethodTemplate {
 			return "";
 		for (Element e : elementUtils.getAllMembers(element))
 			if (e.getKind() == ElementKind.METHOD)
-				if (srcType.equals(Util.paramType(e)) && dstType.equals(Util.returnType(e))) //TODO make this extensible, e.g. SBE mapping
+				if (equals(srcType, Util.paramType(e)) && equals(dstType, Util.returnType(e)))
 					return e.getSimpleName().toString();
 		return "";
+	}
+
+	private boolean equals(TypeMirror a, TypeMirror b) { //TODO why is this necessary?
+		if (a == b) return true;
+		if (a == null || b == null) return false;
+		return a.toString().equals(b.toString());
 	}
 }
 

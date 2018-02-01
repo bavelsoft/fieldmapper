@@ -1,6 +1,5 @@
 package com.bavelsoft.typemapper;
   
-//TODO rename
 public interface MapperDefault {
 	default double map(Double x) { return x == null ? 0 : x; }
 	default float map(Float x) { return x == null ? 0 : x; }
