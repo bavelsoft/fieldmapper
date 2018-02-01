@@ -19,6 +19,7 @@ class MethodTemplate {
 	private final StrSubstitutor sub = new StrSubstitutor(map);
 	private final ExecutableElement methodElement;
 	private final Elements elementUtils;
+	private final String src;
 
 	MethodTemplate(ExecutableElement methodElement, Elements elementUtils) {
 		TypeMirror dstType = Util.returnType(methodElement);
@@ -29,7 +30,7 @@ class MethodTemplate {
 		this.dstFields = getFields(dstType);
 		dstFields.entrySet().removeIf(e->Util.paramType((ExecutableElement)e.getValue()) == null);
 		dstFields.entrySet().removeIf(e->e.getKey().equals("equals"));
-		map.put(TypeMap.SRC, "src"); //TODO sync this with the method signature
+		src = methodElement.getParameters().get(0).getSimpleName().toString();
 		map.put(TypeMap.DST, "dst");
 		map.put(TypeMap.DST_TYPE, dstType.toString());
 	}
@@ -38,12 +39,12 @@ class MethodTemplate {
 		setPerFieldValues(entry, null);
 	}
 
-	void setPerFieldValues(Map.Entry<String, String> entry, TypeElement element) {
+	void setPerFieldValues(Map.Entry<String, String> entry, TypeElement classWithMapMethod) {
 		map.put(TypeMap.DST_FIELD, entry.getKey());
-		map.put(TypeMap.SRC_FIELD, entry.getValue());
+		map.put(TypeMap.SRC_FIELD, src + "." + entry.getValue());
 		TypeMirror dstType = Util.paramType(dstFields.get(entry.getKey()));
 		TypeMirror srcType = Util.returnType(srcFields.get(entry.getValue()));
-		map.put(TypeMap.FUNC, mapMethod(dstType, srcType, element));
+		map.put(TypeMap.FUNC, getMapMethodName(dstType, srcType, classWithMapMethod));
 	}
 
 	String replace(String text) {
@@ -70,14 +71,14 @@ class MethodTemplate {
 			return null;
 	}
 
-	private String mapMethod(TypeMirror dstType, TypeMirror srcType, TypeElement element) {
-		if (element == null)
-			element = (TypeElement)methodElement.getEnclosingElement();
+	private String getMapMethodName(TypeMirror dstType, TypeMirror srcType, TypeElement classWithMapMethod) {
+		if (classWithMapMethod == null)
+			classWithMapMethod = (TypeElement)methodElement.getEnclosingElement();
 		//TODO use less exact map method
 		//TODO complain of ambiguous map method
 		if (srcType == null || dstType == null)
 			return "";
-		for (Element e : elementUtils.getAllMembers(element))
+		for (Element e : elementUtils.getAllMembers(classWithMapMethod))
 			if (e.getKind() == ElementKind.METHOD)
 				if (equals(srcType, Util.paramType(e)) && equals(dstType, Util.returnType(e)))
 					return e.getSimpleName().toString();

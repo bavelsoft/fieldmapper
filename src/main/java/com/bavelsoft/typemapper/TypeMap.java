@@ -8,12 +8,12 @@ import java.util.Map;
 
 @Target(value={ElementType.METHOD})
 public @interface TypeMap {
-	static String DST = "dst", SRC = "src", DST_FIELD = "dstField", SRC_FIELD = "srcField", DST_TYPE = "dstType", FUNC = "func";
+	static String DST = "dst", DST_FIELD = "dstField", SRC_FIELD = "srcField", DST_TYPE = "dstType", FUNC = "func";
 
 	static String firstCode = "${dstType} ${dst} = new ${dstType}()";
 	String first() default firstCode;
 
-	static String perFieldCode = "${dst}.${dstField}(${func}(${src}.${srcField}()))";
+	static String perFieldCode = "${dst}.${dstField}(${func}(${srcField}()))";
 	String perField() default perFieldCode;
 
 	static String lastCode = "return ${dst}";
