@@ -25,8 +25,10 @@ class MethodTemplate {
 		TypeMirror srcType = Util.paramType(methodElement);
 		this.methodElement = methodElement;
 		this.elementUtils = elementUtils;
-		this.dstFields = getFields(dstType);
 		this.srcFields = getFields(srcType);
+		this.dstFields = getFields(dstType);
+		dstFields.entrySet().removeIf(e->Util.paramType((ExecutableElement)e.getValue()) == null);
+		dstFields.entrySet().removeIf(e->e.getKey().equals("equals"));
 		map.put(TypeMap.SRC, "src"); //TODO sync this with the method signature
 		map.put(TypeMap.DST, "dst");
 		map.put(TypeMap.DST_TYPE, dstType.toString());
@@ -56,7 +58,8 @@ class MethodTemplate {
 		Map<String,Element> fields = new HashMap<>();
 		TypeElement element = (TypeElement)asElement(typeMirror);
 		for (Element fieldElement : elementUtils.getAllMembers(element))
-			fields.put(fieldElement.getSimpleName().toString(), fieldElement); //TODO overloading!
+			if (fieldElement.getKind() == ElementKind.METHOD)
+				fields.put(fieldElement.getSimpleName().toString(), fieldElement); //TODO overloading!
 		return fields;
 	}
 	

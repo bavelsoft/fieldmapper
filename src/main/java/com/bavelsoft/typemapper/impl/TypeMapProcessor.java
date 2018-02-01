@@ -114,14 +114,14 @@ Map<? extends ExecutableElement,? extends AnnotationValue>	getElementValues()
 		MethodSpec.Builder method = MethodSpec.overriding(methodElement)
 			.addStatement(template.replace(annotation.first()));
 
-		for (Map.Entry<String, String> entry : getMatchedFields(annotation, template.dstFields, template.srcFields)) {
+		for (Map.Entry<String, String> entry : getMatchedFields(annotation, template.dstFields, template.srcFields).entrySet()) {
 			template.setPerFieldValues(entry);
 			method.addStatement(template.replace(annotation.perField()));
 		}
 		return method.addStatement(template.replace(annotation.last()));
 	}
 
-	private Set<Map.Entry<String, String>> getMatchedFields(TypeMap annotation, Map<String, Element> dstFields, Map<String, Element> srcFields) {
+	private Map<String, String> getMatchedFields(TypeMap annotation, Map<String, Element> dstFields, Map<String, Element> srcFields) {
 		Map<String, String> matchedFields;
 		BiFunction<Collection<String>,Collection<String>,Map<String,String>> match = Util.classValue(annotation::match);
 		try {
@@ -129,7 +129,7 @@ Map<? extends ExecutableElement,? extends AnnotationValue>	getElementValues()
 		} catch (Exception e) {
 			throw new RuntimeException("couldn't match");
 		}
-		return matchedFields.entrySet();
+		return matchedFields;
 	}
 
 	private void write(Element element, TypeSpec typeSpec) throws IOException {
