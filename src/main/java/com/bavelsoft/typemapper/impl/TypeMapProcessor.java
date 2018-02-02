@@ -25,6 +25,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.tools.Diagnostic;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -38,11 +39,15 @@ import javax.lang.model.type.TypeMirror;
 import com.google.auto.service.AutoService;
 import com.bavelsoft.typemapper.TypeMap;
 import com.bavelsoft.typemapper.Field;
+import com.bavelsoft.typemapper.FieldMatcher;
+
+import static java.util.Arrays.asList;
 
 @AutoService(Processor.class)
 public class TypeMapProcessor extends AbstractProcessor {
 	private Messager messager;
 	private Elements elementUtils;
+	private Types typeUtils;
 	private Filer filer;
 	private Class<TypeMap> typeMapClass = TypeMap.class;
 	private Class<Field> fieldClass = Field.class;
@@ -52,6 +57,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 		super.init(env);
 		messager = env.getMessager();
 		elementUtils = env.getElementUtils();
+		typeUtils = env.getTypeUtils();
 		filer = env.getFiler();
 	}
 
@@ -65,7 +71,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 				write(element, generateMapperClass(element).build());
 			} catch (Exception e) {
 				messager.printMessage(Diagnostic.Kind.ERROR,
-						      "couldn't generate field mapper for "+element+" : "+ e.getMessage());
+						      "couldn't generate field mapper for "+element+" : "+ asList(e.getStackTrace()));
                 	} 
 		}
 		return true;
@@ -99,12 +105,11 @@ public class TypeMapProcessor extends AbstractProcessor {
 			return modifiers.contains(Modifier.ABSTRACT);
 	}
 
-//TODO @Field support!
-
 //TODO multiple parameters
 
 	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
 		for (AnnotationMirror mirror : elementUtils.getAllAnnotationMirrors(methodElement)) {
+//TODO @Field support!
 //mirror.getAnnotationType()
 /*
 DeclaredType	getAnnotationType()
@@ -113,27 +118,25 @@ Map<? extends ExecutableElement,? extends AnnotationValue>	getElementValues()
 		}
 
 		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
-		MethodTemplate template = new MethodTemplate(methodElement, elementUtils);
+		MethodTemplate template = new MethodTemplate(methodElement, elementUtils, typeUtils);
 
 		MethodSpec.Builder method = MethodSpec.overriding(methodElement)
 			.addStatement(template.replace(annotation.first()));
 
-		for (Map.Entry<String, String> entry : getMatchedFields(annotation, template.dstFields, template.srcFields).entrySet()) {
+		for (Map.Entry<String, FieldMatcher.StringPair> entry : getMatchedFields(annotation, template).entrySet()) {
 			template.setPerFieldValues(entry);
 			method.addStatement(template.replace(annotation.perField()));
 		}
 		return method.addStatement(template.replace(annotation.last()));
 	}
 
-	private Map<String, String> getMatchedFields(TypeMap annotation, Map<String, Element> dstFields, Map<String, Element> srcFields) {
-		Map<String, String> matchedFields;
-		BiFunction<Collection<String>,Collection<String>,Map<String,String>> match = Util.classValue(annotation::match);
+	private Map<String, FieldMatcher.StringPair> getMatchedFields(TypeMap annotation, MethodTemplate template) {
 		try {
-			matchedFields = match.apply(dstFields.keySet(), srcFields.keySet());
+			FieldMatcher matcher = Util.classValue(annotation::matcher);
+			return matcher.match(template.getDstFields(), template.getSrcFields());
 		} catch (Exception e) {
 			throw new RuntimeException("couldn't match");
 		}
-		return matchedFields;
 	}
 
 	private void write(Element element, TypeSpec typeSpec) throws IOException {

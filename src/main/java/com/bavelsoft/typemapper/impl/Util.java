@@ -3,6 +3,7 @@ package com.bavelsoft.typemapper.impl;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
@@ -16,7 +17,8 @@ class Util {
 
 	static TypeMirror returnType(Element e) {
 		ExecutableElement ee = (ExecutableElement)e;
-		return ee.getReturnType();
+		TypeMirror returnType =  ee.getReturnType();
+		return returnType.getKind() == TypeKind.VOID ? null : returnType;
 	}
 
 	static <T> T classValue(Supplier<Class<T>> f) {

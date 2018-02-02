@@ -19,6 +19,6 @@ public @interface TypeMap {
 	static String lastCode = "return ${dst}";
 	String last() default lastCode;
 
-	Class<? extends BiFunction<Collection<String>, Collection<String>, Map<String, String>>> match() default MatchDefault.class;
+	Class<? extends FieldMatcher> matcher() default FieldMatcherDefault.class;
 }
 

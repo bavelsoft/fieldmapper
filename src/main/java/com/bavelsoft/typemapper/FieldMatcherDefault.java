@@ -5,17 +5,18 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 
-public class MatchDefault implements BiFunction<Collection<String>, Collection<String>, Map<String, String>> {
+public class FieldMatcherDefault implements FieldMatcher {
 	@Override
-	public Map<String, String> apply(Collection<String> dstFields, Collection<String> srcFields) {
-		Map<String, String> map = new HashMap<>();
+	public Map<String, StringPair> match(Collection<String> dstFields, Collection<FieldMatcher.StringPair> srcFields) {
+		Map<String, StringPair> map = new HashMap<>();
 		//this match is as lenient as possible
 		for (String dstField : dstFields) {
 			String field = normalized(dstField);
 			if (dstField.startsWith("set") && Character.isUpperCase(dstField.charAt(3)))
 				field = field.substring(3);
-			for (String srcField : srcFields) {
-				if (normalized(srcField).matches(".*"+field+".*")) {
+//TODO check for ambiguity
+			for (StringPair srcField : srcFields) {
+				if (normalized(srcField.fieldName).matches(".*"+field+".*")) {
 					map.put(dstField, srcField);
 				}
 			}
