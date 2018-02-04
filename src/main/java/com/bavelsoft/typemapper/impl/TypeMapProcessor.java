@@ -43,6 +43,7 @@ import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import com.google.auto.service.AutoService;
 import com.bavelsoft.typemapper.TypeMap;
+import com.bavelsoft.typemapper.ExpectedException;
 import com.bavelsoft.typemapper.Field;
 import com.bavelsoft.typemapper.Fields;
 import com.bavelsoft.typemapper.FieldMatcher;

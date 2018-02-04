@@ -14,6 +14,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.lang.model.type.TypeMirror;
 import org.apache.commons.text.StrSubstitutor;
+import com.bavelsoft.typemapper.ExpectedException;
 import com.bavelsoft.typemapper.TypeMap;
 import com.bavelsoft.typemapper.FieldMatcher.StringPair;
 
