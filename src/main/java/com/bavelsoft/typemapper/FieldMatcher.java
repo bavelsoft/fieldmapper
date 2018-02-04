@@ -7,7 +7,7 @@ import java.util.HashMap;
 import com.google.auto.value.AutoValue;
 
 public interface FieldMatcher {
-	Map<String, StringPair> match(Collection<String> dstFields, Collection<StringPair> srcFields);
+	void match(Map<String, StringPair> matches, Collection<String> dstFields, Collection<StringPair> srcFields);
 
 	@AutoValue
 	abstract class StringPair {

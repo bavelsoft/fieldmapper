@@ -7,8 +7,7 @@ import java.util.HashMap;
 
 public class FieldMatcherDefault implements FieldMatcher {
 	@Override
-	public Map<String, StringPair> match(Collection<String> dstFields, Collection<FieldMatcher.StringPair> srcFields) {
-		Map<String, StringPair> map = new HashMap<>();
+	public void match(Map<String, StringPair> matches, Collection<String> dstFields, Collection<FieldMatcher.StringPair> srcFields) {
 		//this match is as lenient as possible
 		for (String dstField : dstFields) {
 			String field = normalized(dstField);
@@ -25,11 +24,10 @@ public class FieldMatcherDefault implements FieldMatcher {
 				else
 					srcFieldName = srcField.fieldName();
 				if (normalized(srcFieldName).equals(field)) {
-					map.put(dstField, srcField);
+					matches.put(dstField, srcField);
 				}
 			}
 		}
-		return map;
 	}
 
 	private static String normalized(String s) {

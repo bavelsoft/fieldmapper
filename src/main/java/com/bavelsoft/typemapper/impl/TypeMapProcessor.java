@@ -170,7 +170,8 @@ public class TypeMapProcessor extends AbstractProcessor {
 		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		try {
 			FieldMatcher matcher = Util.classValue(annotation::matcher);
-			Map<String, StringPair> matchedFields =  matcher.match(dstFields, srcFields);
+			Map<String, StringPair> matchedFields = new HashMap<>();
+			matcher.match(matchedFields, dstFields, srcFields);
 			matchedFields.putAll(explicitFields);
 			return matchedFields;
 		} catch (Exception e) {
