@@ -4,17 +4,18 @@ import com.bavelsoft.typemapper.TypeMap;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
-public class TypeMapperTest {
+public class MultiMethodTest {
 	public interface Foo {
 		@TypeMap
 		MyDst f(MySrc src);
 
-		default int doo(int i) { return i*2; }
+		@TypeMap
+		MyDst g(MySrc src);
 	}
 
 	@Test public void test()  {
-		Foo mapper = new TypeMapperTest_FooTypeMapper();
+		Foo mapper = new MultiMethodTest_FooTypeMapper();
 		MyDst dst = mapper.f(new MySrc(123));
-		assertEquals(246, dst.x);
+		assertEquals(123, dst.x);
 	}
 }

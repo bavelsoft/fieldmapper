@@ -11,7 +11,7 @@ public class UnboxTest {
 		MyDst f(MyBoxedSrc src);
 	}
 
-	@Test public void simple()  {
+	@Test public void test()  {
 		Foo mapper = new UnboxTest_FooTypeMapper();
 		MyDst dst = mapper.f(new MyBoxedSrc(123));
 		assertEquals(123, dst.x);

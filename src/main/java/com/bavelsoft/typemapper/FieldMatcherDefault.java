@@ -12,11 +12,19 @@ public class FieldMatcherDefault implements FieldMatcher {
 		//this match is as lenient as possible
 		for (String dstField : dstFields) {
 			String field = normalized(dstField);
+//TODO don't chop if there's another field that starts with the string
 			if (dstField.startsWith("set") && Character.isUpperCase(dstField.charAt(3)))
 				field = field.substring(3);
 //TODO check for ambiguity
 			for (StringPair srcField : srcFields) {
-				if (normalized(srcField.fieldName).matches(".*"+field+".*")) {
+				String srcFieldName;
+				if (srcField.fieldName().startsWith("get") && Character.isUpperCase(dstField.charAt(3)))
+					srcFieldName = srcField.fieldName().substring(3);
+				else if (srcField.fieldName().startsWith("is") && Character.isUpperCase(dstField.charAt(2)))
+					srcFieldName = srcField.fieldName().substring(2);
+				else
+					srcFieldName = srcField.fieldName();
+				if (normalized(srcFieldName).equals(field)) {
 					map.put(dstField, srcField);
 				}
 			}

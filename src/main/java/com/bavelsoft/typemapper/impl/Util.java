@@ -8,6 +8,12 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import java.util.function.Supplier;
+import java.util.Map.Entry;
+import java.util.Collection;
+import java.util.ArrayList;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
 
 class Util {
 	static TypeMirror paramType(Element e) {
@@ -37,5 +43,22 @@ class Util {
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	static AnnotationMirror getAnnotationMirror(Element element, Class<?> clazz) {
+		String clazzName = clazz.getName();
+		for(AnnotationMirror m : element.getAnnotationMirrors())
+			if(m.getAnnotationType().toString().equals(clazzName))
+				return m;
+		return null;
+	}
+
+	static AnnotationValue getAnnotationValue(AnnotationMirror annotationMirror, String key) {
+		if (annotationMirror == null)
+			return null;
+		for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotationMirror.getElementValues().entrySet() )
+			if(entry.getKey().getSimpleName().toString().equals(key))
+				return entry.getValue();
+		return null;
 	}
 }

@@ -12,7 +12,7 @@ public class AbstractTest {
 		void g();
 	}
 
-	@Test public void simple()  {
+	@Test public void test()  {
 		Moo mapper = new AbstractTest_MooTypeMapper() { public void g() {} };
 		MyDst dst = mapper.f(new MySrc(123));
 		assertEquals(123, dst.x);

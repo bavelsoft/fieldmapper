@@ -1,7 +1,7 @@
 package test;
 
 public class MySrc2 {
-	char y;
-	MySrc2(char y) { this.y = y; }
-	char getY() { return y; }
+	char z;
+	MySrc2(char z) { this.z = z; }
+	char getZ() { return z; }
 }

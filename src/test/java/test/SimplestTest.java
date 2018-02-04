@@ -10,7 +10,7 @@ public class SimplestTest {
 		MyDst f(MySrc src);
 	}
 
-	@Test public void simple()  {
+	@Test public void test()  {
 		Foo mapper = new SimplestTest_FooTypeMapper();
 		MyDst dst = mapper.f(new MySrc(123));
 		assertEquals(123, dst.x);

@@ -10,10 +10,10 @@ public class MultiArgTest {
 		MyDst f(MySrc src, MySrc2 src2);
 	}
 
-	@Test public void simple()  {
+	@Test public void test()  {
 		Foo mapper = new MultiArgTest_FooTypeMapper();
 		MyDst dst = mapper.f(new MySrc(123), new MySrc2('q'));
 		assertEquals(123, dst.x);
-		assertEquals('q', dst.y);
+		assertEquals('q', dst.z);
 	}
 }

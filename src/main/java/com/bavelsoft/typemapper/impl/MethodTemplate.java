@@ -51,7 +51,7 @@ class MethodTemplate {
 			Map<String, Element> singleSrcFields = getFields(parameter.asType(), elementUtils);
 			singleSrcFields.entrySet().removeIf(e->Util.returnType((ExecutableElement)e.getValue()) == null);
 			for (Map.Entry<String, Element> entry : singleSrcFields.entrySet()) {
-				StringPair key = new StringPair(paramName, entry.getKey());
+				StringPair key = StringPair.create(paramName, entry.getKey());
 				srcFields.put(key, entry.getValue());
 			}
 		}
@@ -71,9 +71,18 @@ class MethodTemplate {
 
 	void setPerFieldValues(Map.Entry<String, StringPair> entry, TypeElement classWithMapMethod) {
 		map.put(TypeMap.DST_FIELD, entry.getKey());
-		map.put(TypeMap.SRC_FIELD, entry.getValue().paramName+"."+entry.getValue().fieldName);
-		TypeMirror dstType = Util.paramType(dstFields.get(entry.getKey()));
-		TypeMirror srcType = Util.returnType(srcFields.get(entry.getValue()));
+		map.put(TypeMap.SRC_FIELD, entry.getValue().toString());
+			TypeMirror dstType, srcType;
+		try {
+			dstType = Util.paramType(dstFields.get(entry.getKey()));
+		} catch (NullPointerException e) {
+			throw new ExpectedException("no setter for "+entry.getKey());
+		}
+		try {
+			srcType = Util.returnType(srcFields.get(entry.getValue()));
+		} catch (NullPointerException e) {
+			throw new ExpectedException("no getter for "+entry.getValue());
+		}
 		map.put(TypeMap.FUNC, getMapMethodName(dstType, srcType, classWithMapMethod));
 	}
 
@@ -81,7 +90,7 @@ class MethodTemplate {
 		try {
 			return sub.replace(text);
 		} catch (Exception e) {
-			throw new RuntimeException("couldn't replace: "+text);
+			throw new ExpectedException("couldn't replace: "+text);
 		}
 	}
 

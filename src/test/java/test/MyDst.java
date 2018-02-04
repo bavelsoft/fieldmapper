@@ -2,7 +2,7 @@ package test;
 
 public class MyDst {
 	int x;
-	char y;
+	char z;
 	void setX(int x) { this.x = x; }
-	void setY(char y) { this.y = y; }
+	void setZ(char z) { this.z = z; }
 }

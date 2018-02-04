@@ -10,6 +10,6 @@ import java.util.function.Function;
 public @interface Field {
 	String src();
 	String dst();
-	Class mapper() default MapperDefault.class;
+	//Class mapper() default MapperDefault.class;
 }
 

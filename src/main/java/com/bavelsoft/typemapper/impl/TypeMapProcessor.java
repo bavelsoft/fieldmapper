@@ -4,14 +4,18 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Set;
-import java.util.HashSet;
+import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.tools.FileObject;
@@ -27,6 +31,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -39,7 +44,9 @@ import javax.lang.model.type.TypeMirror;
 import com.google.auto.service.AutoService;
 import com.bavelsoft.typemapper.TypeMap;
 import com.bavelsoft.typemapper.Field;
+import com.bavelsoft.typemapper.Fields;
 import com.bavelsoft.typemapper.FieldMatcher;
+import com.bavelsoft.typemapper.FieldMatcher.StringPair;
 
 import static java.util.Arrays.asList;
 
@@ -51,6 +58,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 	private Filer filer;
 	private Class<TypeMap> typeMapClass = TypeMap.class;
 	private Class<Field> fieldClass = Field.class;
+	private Class<Fields> fieldsClass = Fields.class;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment env) {
@@ -69,9 +77,12 @@ public class TypeMapProcessor extends AbstractProcessor {
 		for (Element element : elements) {
 			try {
 				write(element, generateMapperClass(element).build());
+			} catch (ExpectedException e) {
+				messager.printMessage(Diagnostic.Kind.ERROR,
+						      "couldn't generate field mapper for "+element+" : "+ e.getMessage());
 			} catch (Exception e) {
 				messager.printMessage(Diagnostic.Kind.ERROR,
-						      "couldn't generate field mapper for "+element+" : "+ asList(e.getStackTrace()));
+						      "couldn't generate field mapper for "+element+" : "+ ExceptionUtils.getStackTrace(e));
                 	} 
 		}
 		return true;
@@ -105,17 +116,9 @@ public class TypeMapProcessor extends AbstractProcessor {
 			return modifiers.contains(Modifier.ABSTRACT);
 	}
 
-//TODO multiple parameters
-
 	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
-		for (AnnotationMirror mirror : elementUtils.getAllAnnotationMirrors(methodElement)) {
-//TODO @Field support!
-//mirror.getAnnotationType()
-/*
-DeclaredType	getAnnotationType()
-Map<? extends ExecutableElement,? extends AnnotationValue>	getElementValues()
-*/
-		}
+//TODO nested support
+//TODO mapper support for @Field
 
 		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		MethodTemplate template = new MethodTemplate(methodElement, elementUtils, typeUtils);
@@ -123,19 +126,54 @@ Map<? extends ExecutableElement,? extends AnnotationValue>	getElementValues()
 		MethodSpec.Builder method = MethodSpec.overriding(methodElement)
 			.addStatement(template.replace(annotation.first()));
 
-		for (Map.Entry<String, FieldMatcher.StringPair> entry : getMatchedFields(annotation, template).entrySet()) {
+		for (Map.Entry<String, StringPair> entry : getMatchedFields(methodElement, template).entrySet()) {
 			template.setPerFieldValues(entry);
 			method.addStatement(template.replace(annotation.perField()));
 		}
 		return method.addStatement(template.replace(annotation.last()));
 	}
 
-	private Map<String, FieldMatcher.StringPair> getMatchedFields(TypeMap annotation, MethodTemplate template) {
+	private Map<String, StringPair> getExplicitFieldMap(ExecutableElement methodElement) {
+		Collection<AnnotationMirror> mirrors = new ArrayList<>();
+		AnnotationMirror a = Util.getAnnotationMirror(methodElement, fieldsClass);
+		if (a != null) { 
+			for (Object v : (List)Util.getAnnotationValue(a, "value").getValue()) {
+				mirrors.add((AnnotationMirror)((AnnotationValue)v).getValue());
+			}
+		} else {
+			a = Util.getAnnotationMirror(methodElement, fieldClass); 
+			if (a != null)
+				mirrors.add(a);
+		}
+		Map<String, StringPair> explicitFields = new HashMap<>();
+		for (AnnotationMirror m : mirrors) {
+			String[] src = Util.getAnnotationValue(m, "src").getValue().toString().split("\\.", 2);
+//TODO error checking
+			explicitFields.put(Util.getAnnotationValue(m, "dst").getValue().toString(),
+				StringPair.create(src[0], src[1]));
+		}
+		return explicitFields;
+	}
+
+	private Map<String, StringPair> getMatchedFields(ExecutableElement methodElement, MethodTemplate template) {
+		List<String> dstFields = new ArrayList<>(template.getDstFields());
+		List<StringPair> srcFields = new ArrayList<>(template.getSrcFields());
+		Map<String, StringPair> explicitFields = getExplicitFieldMap(methodElement);
+		for (String dst : explicitFields.keySet()) {
+			dstFields.remove(dst);
+			Iterator<StringPair> it = srcFields.iterator();
+			while (it.hasNext()) //TODO optimize
+				if (it.next().fieldName().equals(explicitFields.get(dst).fieldName()))
+					it.remove(); //TODO this prevents mapping it to some other field, fix!
+		}
+		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		try {
 			FieldMatcher matcher = Util.classValue(annotation::matcher);
-			return matcher.match(template.getDstFields(), template.getSrcFields());
+			Map<String, StringPair> matchedFields =  matcher.match(dstFields, srcFields);
+			matchedFields.putAll(explicitFields);
+			return matchedFields;
 		} catch (Exception e) {
-			throw new RuntimeException("couldn't match");
+			throw new ExpectedException("couldn't match");
 		}
 	}
 
@@ -157,7 +195,11 @@ Map<? extends ExecutableElement,? extends AnnotationValue>	getElementValues()
 
 	@Override
 	public Set<String> getSupportedAnnotationTypes() {
-		return Collections.singleton(typeMapClass.getCanonicalName().toString());
+		return new HashSet<>(asList(
+			typeMapClass.getCanonicalName().toString(),
+			fieldClass.getCanonicalName().toString(),
+			fieldsClass.getCanonicalName().toString()
+		));
 	}
 
 	@Override
