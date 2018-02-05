@@ -1,6 +1,6 @@
 Java object mapping, inspired by Mapstruct, with a [Worse Is Better](https://en.wikipedia.org/wiki/Worse_is_better) approach.
 
-Typemapper generates implements of interfaces with @TypeMap annotated methods.
+Typemapper generates implementations of @TypeMap annotated methods.
 
 To get automatically generated code for mapping objects of class Y to objects of class X, annotate an abstract method:
 
@@ -9,7 +9,7 @@ To get automatically generated code for mapping objects of class Y to objects of
         X map(Y y);
     }
 
-And you'll get a generated class FooTypeMapper which implements Foo, and matches up the setters of X with the getters of Y. If any of the types don't match up, it will automatically call conversion methods in the class.
+And you'll get a generated class FooTypeMapper which implements Foo, and which matches up the setters of X with the getters of Y. If any of the types don't match up, it will automatically call conversion methods in the class.
 
     interface Foo {
         @TypeMapper
