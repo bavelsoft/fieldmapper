@@ -2,8 +2,6 @@ Java object mapping, inspired by Mapstruct, with a [Worse Is Better](https://en.
 
 Typemapper generates implements of interfaces with @TypeMap annotated methods.
 
-For example, for dependency injection, use abstract getter methods and just implement those methods in subclasses of the generated classes.
-
 To get automatically generated code for mapping object of class Y to objects of class X, annotate an abstract method:
 
     interface Foo {
@@ -11,7 +9,7 @@ To get automatically generated code for mapping object of class Y to objects of 
         X map(Y y);
     }
 
-It matches up the setters of X with the getters of Y. If any of the types don't match up, it will automatically call conversion methods in the class.
+And you'll get a generate FooTypeMapper which implements Foo, and matches up the setters of X with the getters of Y. If any of the types don't match up, it will automatically call conversion methods in the class.
 
     interface Foo {
         @TypeMapper
@@ -51,5 +49,27 @@ You can also override the code generated for each field, or at the start or end 
         @TypeMapper(perFieldCode = "if (${srcFields} != null) ${dst}.${dstField}(${func}(${srcField}()))")
         X map(Y y);
     }
+
+If you'd like to use dependency injection, define abstract getter methods and wire up the generated class properly.
+
+    interface Foo {
+        @TypeMapper
+        X map(Y y);
+
+        default SubX map(SubY s) {
+            return getTranslator().translate(s);
+        }
+
+        SubXYTranslator getTranslator();
+    }
+
+    @Singleton
+    class MyFooTypeMapper extends FooTypeMapper {
+        @Inject SubXYTranslator translator;
+
+        SubXYTranslator getTranslator() { return translator; }
+    }
+
+In general, we add features if there isn't otherwise a reasonable way to accomplish their goal. For example, the @Field annotation is needed for the sake of safety; if desired we can statically verify that all getters are matched. Look for TODOs in the code to see planned features, and look at the unit tests for usage help.
 
 TODO elaborate!
