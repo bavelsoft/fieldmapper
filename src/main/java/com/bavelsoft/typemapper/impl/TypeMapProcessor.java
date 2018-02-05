@@ -159,21 +159,14 @@ public class TypeMapProcessor extends AbstractProcessor {
 	private Map<String, StringPair> getMatchedFields(ExecutableElement methodElement, MethodTemplate template) {
 		List<String> dstFields = new ArrayList<>(template.getDstFields());
 		List<StringPair> srcFields = new ArrayList<>(template.getSrcFields());
-		Map<String, StringPair> explicitFields = getExplicitFieldMap(methodElement);
-		for (String dst : explicitFields.keySet()) {
-			dstFields.remove(dst);
-			Iterator<StringPair> it = srcFields.iterator();
-			while (it.hasNext()) //TODO optimize
-				if (it.next().fieldName().equals(explicitFields.get(dst).fieldName()))
-					it.remove(); //TODO this prevents mapping it to some other field, fix!
-		}
+		Map<String, StringPair> matchedFields = getExplicitFieldMap(methodElement);
 		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		try {
 			FieldMatcher matcher = Util.classValue(annotation::matcher);
-			Map<String, StringPair> matchedFields = new HashMap<>();
 			matcher.match(matchedFields, dstFields, srcFields);
-			matchedFields.putAll(explicitFields);
 			return matchedFields;
+		} catch (RuntimeException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new ExpectedException("couldn't match");
 		}
