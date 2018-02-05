@@ -117,10 +117,16 @@ public class TypeMapProcessor extends AbstractProcessor {
 			return modifiers.contains(Modifier.ABSTRACT);
 	}
 
-	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
-//TODO nested support
-//TODO mapper support for @Field
+/*
+TODO
+nested support
+mapper support for @Field
+enums
+collections&arrays
+use MapperDefault as the default without requiring users to
+*/
 
+	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
 		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		MethodTemplate template = new MethodTemplate(methodElement, elementUtils, typeUtils);
 
