@@ -1,4 +1,4 @@
-Java object mapping, with a [Worse Is Better](https://en.wikipedia.org/wiki/Worse_is_better) approach.
+Java object mapping, inspired by Mapstruct, with a [Worse Is Better](https://en.wikipedia.org/wiki/Worse_is_better) approach.
 
 Typemapper generates implements of interfaces with @TypeMap annotated methods.
 
@@ -40,8 +40,8 @@ To override (or disambiguate) particular fields, use the @Field annotation:
 
     interface Foo {
         @TypeMapper
-	@Field(src="y.getA", dst="setB")
-	@Field(src="y.getB", dst="setC")
+        @Field(src="y.getA", dst="setB")
+        @Field(src="y.getB", dst="setC")
         X map(Y y, Z z);
     }
 
