@@ -18,8 +18,10 @@ And you'll get a generated class FooTypeMapper which implements Foo, and which m
             dst.setWee(y.getWee());
             dst.setQux(y.getQux());
             return dst;
-	}
+        }
     }
+
+To keep this document short, that's the only bit of example generated code included here. For the rest, you'll have to try it.
 
 If any of the types of the getters and setters don't match up, it will automatically call conversion methods in the class.
 
