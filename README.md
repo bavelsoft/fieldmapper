@@ -23,7 +23,7 @@ And you'll get a generated class FooTypeMapper which implements Foo, and which m
 
 To keep this document short, that's the only bit of example generated code included here. For the rest, you'll have to try it.
 
-If any of the types of the getters and setters don't match up, it will automatically call conversion methods in the class.
+If any of the types of the getters and setters don't match up, it will automatically call your conversion method:
 
     interface Foo {
         @TypeMapper
@@ -34,7 +34,7 @@ If any of the types of the getters and setters don't match up, it will automatic
         }
     }
 
-It doesn't matter what the conversion methods are called, so long as their types match. You can include conversion methods from other files by extending or implementing other interfaces or classes. To get automatic unboxing that doesn't throw NullPointerExceptions, you can extend a builtin interface:
+It doesn't matter what the conversion methods are called, so long as their types match. You can include conversion methods from other files by extending or implementing other interfaces or classes. To get automatic unboxing that doesn't throw NullPointerExceptions, you can extend or implement a builtin interface:
 
     interface Foo extends MapperDefault {
         @TypeMapper
