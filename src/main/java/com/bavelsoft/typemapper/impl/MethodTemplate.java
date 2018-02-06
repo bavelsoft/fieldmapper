@@ -21,7 +21,7 @@ import com.bavelsoft.typemapper.FieldMatcher.StringPair;
 class MethodTemplate {
 	private final Map<String, Element> dstFields;
 	private final Map<StringPair, Element> srcFields;
-	private final Map<String, String> map;
+	private final Map<String, String> templateData;
 	private final StrSubstitutor sub;
 	private final ExecutableElement methodElement;
 	private final Elements elementUtils;
@@ -31,18 +31,18 @@ class MethodTemplate {
 		TypeMirror dstType = Util.returnType(methodElement);
 		this.dstFields = initDstFields(dstType, elementUtils);
 		this.srcFields = initSrcFields(methodElement, elementUtils);
-		this.map = initMap(dstType);
-		this.sub = new StrSubstitutor(map);
+		this.templateData = initMap(dstType);
+		this.sub = new StrSubstitutor(templateData);
 		this.methodElement = methodElement;
 		this.elementUtils = elementUtils;
 		this.typeUtils = typeUtils;
 	}
 
 	private static Map<String, String> initMap(TypeMirror dstType) {
-	 	Map<String,String> map = new HashMap<>();
-		map.put(TypeMap.DST, "dst");
-		map.put(TypeMap.DST_TYPE, dstType.toString());
-		return map;
+	 	Map<String,String> templateData = new HashMap<>();
+		templateData.put(TypeMap.DST, "dst");
+		templateData.put(TypeMap.DST_TYPE, dstType.toString());
+		return templateData;
 	}
 
 	private static Map<StringPair, Element> initSrcFields(ExecutableElement methodElement, Elements elementUtils) {
@@ -71,8 +71,8 @@ class MethodTemplate {
 	}
 
 	void setPerFieldValues(Map.Entry<String, StringPair> entry, TypeElement classWithMapMethod) {
-		map.put(TypeMap.DST_FIELD, entry.getKey());
-		map.put(TypeMap.SRC_FIELD, entry.getValue().toString());
+		templateData.put(TypeMap.DST_FIELD, entry.getKey());
+		templateData.put(TypeMap.SRC_FIELD, entry.getValue().toString());
 			TypeMirror dstType, srcType;
 		try {
 			dstType = Util.paramType(dstFields.get(entry.getKey()));
@@ -84,7 +84,7 @@ class MethodTemplate {
 		} catch (NullPointerException e) {
 			throw new ExpectedException("no getter for "+entry.getValue());
 		}
-		map.put(TypeMap.FUNC, getMapMethodName(dstType, srcType, classWithMapMethod));
+		templateData.put(TypeMap.FUNC, getMapMethodName(dstType, srcType, classWithMapMethod));
 	}
 
 	String replace(String text) {

@@ -1,0 +1,5 @@
+nested support
+mapper support for @Field
+enums
+collections&arrays
+use MapperDefault as the default without requiring users to

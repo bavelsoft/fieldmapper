@@ -57,9 +57,6 @@ public class TypeMapProcessor extends AbstractProcessor {
 	private Elements elementUtils;
 	private Types typeUtils;
 	private Filer filer;
-	private Class<TypeMap> typeMapClass = TypeMap.class;
-	private Class<Field> fieldClass = Field.class;
-	private Class<Fields> fieldsClass = Fields.class;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment env) {
@@ -73,7 +70,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotationsParam, RoundEnvironment env) {
 		Set<Element> elements = new HashSet<>();
-		for (Element element : env.getElementsAnnotatedWith(typeMapClass))
+		for (Element element : env.getElementsAnnotatedWith(FieldMatchSupport.typeMapClass))
 			elements.add(element.getEnclosingElement());
 		for (Element element : elements) {
 			try {
@@ -98,9 +95,9 @@ public class TypeMapProcessor extends AbstractProcessor {
 		
 		boolean hasUnimplemented = false;
 		for (Element e : elementUtils.getAllMembers((TypeElement)element)) {
-			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(typeMapClass) != null) {
+			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(FieldMatchSupport.typeMapClass) != null) {
 				type.addMethod(generateMapperMethod((ExecutableElement)e).build());
-			} else if (e.getKind() == ElementKind.METHOD && isAbstract(e)) {
+			} else if (e.getKind() == ElementKind.METHOD && Util.isAbstract(e)) {
 				hasUnimplemented = true;
 			}
 		}
@@ -109,73 +106,19 @@ public class TypeMapProcessor extends AbstractProcessor {
 		return type;
 	}
 
-	private boolean isAbstract(Element method) {
-		Set<Modifier> modifiers = method.getModifiers();
-		if (method.getEnclosingElement().getKind() == ElementKind.INTERFACE)
-			return !modifiers.contains(Modifier.STATIC) && !modifiers.contains(Modifier.DEFAULT);
-		else
-			return modifiers.contains(Modifier.ABSTRACT);
-	}
-
-/*
-TODO
-nested support
-mapper support for @Field
-enums
-collections&arrays
-use MapperDefault as the default without requiring users to
-*/
-
 	private MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement) {
-		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
+		TypeMap annotation = methodElement.getAnnotation(FieldMatchSupport.typeMapClass);
 		MethodTemplate template = new MethodTemplate(methodElement, elementUtils, typeUtils);
 
 		MethodSpec.Builder method = MethodSpec.overriding(methodElement)
 			.addStatement(template.replace(annotation.first()));
 
-		for (Map.Entry<String, StringPair> entry : getMatchedFields(methodElement, template).entrySet()) {
+		Map<String, StringPair> map = FieldMatchSupport.getMatchedFields(methodElement, template);
+		for (Map.Entry<String, StringPair> entry : map.entrySet()) {
 			template.setPerFieldValues(entry);
 			method.addStatement(template.replace(annotation.perField()));
 		}
 		return method.addStatement(template.replace(annotation.last()));
-	}
-
-	private Map<String, StringPair> getExplicitFieldMap(ExecutableElement methodElement) {
-		Collection<AnnotationMirror> mirrors = new ArrayList<>();
-		AnnotationMirror a = Util.getAnnotationMirror(methodElement, fieldsClass);
-		if (a != null) { 
-			for (Object v : (List)Util.getAnnotationValue(a, "value").getValue()) {
-				mirrors.add((AnnotationMirror)((AnnotationValue)v).getValue());
-			}
-		} else {
-			a = Util.getAnnotationMirror(methodElement, fieldClass); 
-			if (a != null)
-				mirrors.add(a);
-		}
-		Map<String, StringPair> explicitFields = new HashMap<>();
-		for (AnnotationMirror m : mirrors) {
-			String[] src = Util.getAnnotationValue(m, "src").getValue().toString().split("\\.", 2);
-//TODO error checking
-			explicitFields.put(Util.getAnnotationValue(m, "dst").getValue().toString(),
-				StringPair.create(src[0], src[1]));
-		}
-		return explicitFields;
-	}
-
-	private Map<String, StringPair> getMatchedFields(ExecutableElement methodElement, MethodTemplate template) {
-		List<String> dstFields = new ArrayList<>(template.getDstFields());
-		List<StringPair> srcFields = new ArrayList<>(template.getSrcFields());
-		Map<String, StringPair> matchedFields = getExplicitFieldMap(methodElement);
-		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
-		try {
-			FieldMatcher matcher = Util.classValue(annotation::matcher);
-			matcher.match(matchedFields, dstFields, srcFields);
-			return matchedFields;
-		} catch (RuntimeException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new ExpectedException("couldn't match");
-		}
 	}
 
 	private void write(Element element, TypeSpec typeSpec) throws IOException {
@@ -197,9 +140,9 @@ use MapperDefault as the default without requiring users to
 	@Override
 	public Set<String> getSupportedAnnotationTypes() {
 		return new HashSet<>(asList(
-			typeMapClass.getCanonicalName().toString(),
-			fieldClass.getCanonicalName().toString(),
-			fieldsClass.getCanonicalName().toString()
+			FieldMatchSupport.typeMapClass.getCanonicalName().toString(),
+			FieldMatchSupport.fieldClass.getCanonicalName().toString(),
+			FieldMatchSupport.fieldsClass.getCanonicalName().toString()
 		));
 	}
 

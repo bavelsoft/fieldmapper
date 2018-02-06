@@ -9,11 +9,14 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import java.util.function.Supplier;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Collection;
 import java.util.ArrayList;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 
 class Util {
 	static TypeMirror paramType(Element e) {
@@ -60,5 +63,13 @@ class Util {
 			if(entry.getKey().getSimpleName().toString().equals(key))
 				return entry.getValue();
 		return null;
+	}
+
+	static boolean isAbstract(Element method) {
+		Set<Modifier> modifiers = method.getModifiers();
+		if (method.getEnclosingElement().getKind() == ElementKind.INTERFACE)
+			return !modifiers.contains(Modifier.STATIC) && !modifiers.contains(Modifier.DEFAULT);
+		else
+			return modifiers.contains(Modifier.ABSTRACT);
 	}
 }
