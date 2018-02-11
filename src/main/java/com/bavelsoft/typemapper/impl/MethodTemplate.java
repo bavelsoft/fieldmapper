@@ -18,6 +18,9 @@ import com.bavelsoft.typemapper.ExpectedException;
 import com.bavelsoft.typemapper.TypeMap;
 import com.bavelsoft.typemapper.FieldMatcher.StringPair;
 
+/*
+ * This is the only real stateful class in the project.
+ */
 class MethodTemplate {
 	private final Map<String, Element> targetFields;
 	private final Map<StringPair, Element> sourceFields;
@@ -105,20 +108,13 @@ class MethodTemplate {
 	
 	private static Map<String,Element> getFields(TypeMirror typeMirror, Elements elementUtils) {
 		Map<String,Element> fields = new HashMap<>();
-		TypeElement element = (TypeElement)asElement(typeMirror);
+		TypeElement element = (TypeElement)Util.asElement(typeMirror);
 		for (Element fieldElement : elementUtils.getAllMembers(element))
 			if (fieldElement.getKind() == ElementKind.METHOD)
 				fields.put(fieldElement.getSimpleName().toString(), fieldElement); //TODO overloading!
 		return fields;
 	}
 	
-	private static Element asElement(TypeMirror t) {
-		if (t instanceof DeclaredType)
-			return ((DeclaredType)t).asElement();
-		else
-			return null;
-	}
-
 	private String getMapMethodName(TypeMirror targetType, TypeMirror sourceType, TypeElement classWithMapMethod) {
 		if (classWithMapMethod == null)
 			classWithMapMethod = (TypeElement)methodElement.getEnclosingElement();
@@ -128,19 +124,9 @@ class MethodTemplate {
 			return "";
 		for (Element e : elementUtils.getAllMembers(classWithMapMethod))
 			if (e.getKind() == ElementKind.METHOD)
-				if (isSame(sourceType, Util.paramType(e)) && isSame(targetType, Util.returnType(e)))
+				if (Util.isSame(sourceType, Util.paramType(e), typeUtils)
+				&& Util.isSame(targetType, Util.returnType(e), typeUtils))
 					return e.getSimpleName().toString();
 		return "";
 	}
-
-	private boolean isSame(TypeMirror a, TypeMirror b) {
-		if (a == b)
-			return true;
-		else if (a == null || b == null)
-			return false;
-		else
-			return typeUtils.isSameType(a, b);
-	}
 }
-
-

@@ -16,6 +16,9 @@ import com.bavelsoft.typemapper.FieldMatcher;
 import com.bavelsoft.typemapper.FieldMatcher.StringPair;
 import com.bavelsoft.typemapper.TypeMap;
 
+/*
+ * Central class, calls MethodTemplate and FieldMatchSupport
+ */
 class Generator {
 	static TypeSpec.Builder generateMapperClass(Element element, Elements elementUtils, Types typeUtils) {
 		TypeSpec.Builder type = TypeSpec.classBuilder(getClassName(element));

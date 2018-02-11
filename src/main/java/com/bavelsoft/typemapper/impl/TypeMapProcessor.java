@@ -29,6 +29,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import static java.util.Arrays.asList;
 
+/*
+ * Entry point, handles annotation processing api, calls Generator for the real work
+ */
 @AutoService(Processor.class)
 public class TypeMapProcessor extends AbstractProcessor {
 	private Messager messager;

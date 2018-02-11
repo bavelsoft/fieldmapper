@@ -12,12 +12,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Collection;
 import java.util.ArrayList;
+import javax.lang.model.util.Types;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 
+/*
+ * Code here is not specific to this project.
+ */
 class Util {
 	static TypeMirror paramType(Element e) {
 		ExecutableElement ee = (ExecutableElement)e;
@@ -71,5 +75,21 @@ class Util {
 			return !modifiers.contains(Modifier.STATIC) && !modifiers.contains(Modifier.DEFAULT);
 		else
 			return modifiers.contains(Modifier.ABSTRACT);
+	}
+
+	static Element asElement(TypeMirror t) {
+		if (t instanceof DeclaredType)
+			return ((DeclaredType)t).asElement();
+		else
+			return null;
+	}
+
+	static boolean isSame(TypeMirror a, TypeMirror b, Types typeUtils) {
+		if (a == b)
+			return true;
+		else if (a == null || b == null)
+			return false;
+		else
+			return typeUtils.isSameType(a, b);
 	}
 }
