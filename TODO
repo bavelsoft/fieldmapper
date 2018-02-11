@@ -1,4 +1,4 @@
-match map method with covariant parameter
+match map method with covariant parameter - test and fix
 use matching constructor
 enums
 target field instead of setter
