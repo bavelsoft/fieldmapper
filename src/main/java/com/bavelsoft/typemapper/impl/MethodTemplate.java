@@ -124,20 +124,38 @@ class MethodTemplate {
 			return "";
 		Element matchingMapMethod = null;
 		for (Element e : elementUtils.getAllMembers(classWithMapMethod))
-			if (e.getKind() == ElementKind.METHOD)
-				if (Util.isAssignable(sourceType, Util.paramType(e), typeUtils)
-				&& Util.isAssignable(targetType, Util.returnType(e), typeUtils)) {
-					if (matchingMapMethod == null
-					        || Util.isAssignable(Util.paramType(matchingMapMethod), Util.paramType(e), typeUtils)) {
+			if (e.getKind() == ElementKind.METHOD) {
+				TypeMirror paramType = Util.paramType(e);
+				TypeMirror returnType = Util.returnType(e);
+				if (paramType == null || returnType == null)
+					continue;
+				if (typeUtils.isAssignable(sourceType, paramType)
+				 && typeUtils.isAssignable(targetType, returnType)) {
+					if (matchingMapMethod == null) {
 						matchingMapMethod = e;
-					} else if (Util.isAssignable(Util.paramType(e), Util.paramType(matchingMapMethod), typeUtils)) {
-						//leave it
-					} else {
-						throw new ExpectedException("Umabiguous matching methods: "
-									    +matchingMapMethod+" and "+e);
+						continue;
 					}
+					boolean a = typeUtils.isAssignable(paramType, Util.paramType(matchingMapMethod));
+					boolean b = typeUtils.isAssignable(Util.paramType(matchingMapMethod), paramType));
+					if (a && !b) {
+						matchingMapMethod = e;
+						continue;
+					} else if (b && !a) {
+						//leave matchingMapMethod
+						continue;
+					}
+					boolean c = typeUtils.isAssignable(returnType, Util.returnType(matchingMapMethod));
+					boolean d = typeUtils.isAssignable(Util.returnType(matchingMapMethod), returnType));
+					if (c && !d) {
+						matchingMapMethod = e;
+						continue;
+					} else if (d && !c) {
+						//leave matchingMapMethod
+						continue;
+					}
+					throw new ExpectedException("Umabiguous matching methods: "+matchingMapMethod+" and "+e);
 				}
-		//TODO disambiguate based on returntype if paramtypes same
+			}
 		return matchingMapMethod == null ? "" : matchingMapMethod.getSimpleName().toString();
 	}
 }
