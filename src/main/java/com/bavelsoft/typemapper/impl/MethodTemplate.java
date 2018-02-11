@@ -151,7 +151,7 @@ class MethodTemplate {
 						//leave matchingMapMethod
 						continue;
 					}
-					throw new ExpectedException("Umabiguous matching methods: "+matchingMapMethod+" and "+e);
+					throw new ExpectedException("Ambiguous matching methods: "+matchingMapMethod+" and "+e);
 				}
 			}
 		return matchingMapMethod == null ? "" : matchingMapMethod.getSimpleName().toString();
