@@ -118,8 +118,6 @@ class MethodTemplate {
 	private String getMapMethodName(TypeMirror targetType, TypeMirror sourceType, TypeElement classWithMapMethod) {
 		if (classWithMapMethod == null)
 			classWithMapMethod = (TypeElement)methodElement.getEnclosingElement();
-		//TODO use less exact map method
-		//TODO complain of ambiguous map method
 		if (sourceType == null || targetType == null)
 			return "";
 		Element matchingMapMethod = null;
