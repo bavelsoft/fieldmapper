@@ -83,13 +83,4 @@ class Util {
 		else
 			return null;
 	}
-
-	static boolean isAssignable(TypeMirror a, TypeMirror b, Types typeUtils) {
-		if (a == b)
-			return true;
-		else if (a == null || b == null)
-			return false;
-		else
-			return typeUtils.isAssignable(a, b);
-	}
 }
