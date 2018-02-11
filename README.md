@@ -13,11 +13,11 @@ And you'll get a generated class FooTypeMapper which implements Foo, and which m
 
     class FooTypeMapper implements Foo {
         public X map(Y y) {
-            X dst = new X();
-            dst.setA(y.getA());
-            dst.setWee(y.getWee());
-            dst.setQux(y.getQux());
-            return dst;
+            X target = new X();
+            target.setA(y.getA());
+            target.setWee(y.getWee());
+            target.setQux(y.getQux());
+            return target;
         }
     }
 
@@ -50,12 +50,12 @@ To override (or disambiguate) particular fields, use the @Field annotation, alwa
 
     interface Foo {
         @TypeMapper
-        @Field(src="y.getA", dst="setB")
-        @Field(src="y.getB", dst="setC")
+        @Field(source="y.getA", target="setB")
+        @Field(source="y.getB", target="setC")
         X map(Y y, Z z);
     }
 
-In addition to warning about mapping ambiguity, by default TypeMapper warns about unmapped setters on the destination class. To alter this behavior, configure a different matcher (one of FieldMatcherParanoid, FieldMatcherSrc, FieldMatcherDefault, FieldMatcherRelaxed):
+In addition to warning about mapping ambiguity, by default TypeMapper warns about unmapped setters on the destination class. To alter this behavior, configure a different matcher (one of FieldMatcherParanoid, FieldMatcherSource, FieldMatcherDefault, FieldMatcherRelaxed):
 
     interface Foo {
         @TypeMapper(matcher=FieldMatcherDefault.class)
@@ -66,7 +66,7 @@ In addition to warning about mapping ambiguity, by default TypeMapper warns abou
 You can also override the code generated for each field, or at the start or end of the method:
 
     interface Foo {
-        @TypeMapper(perFieldCode = "if (${srcFields} != null) ${dst}.${dstField}(${func}(${srcField}()))")
+        @TypeMapper(perFieldCode = "if (${sourceFields} != null) ${target}.${targetField}(${func}(${sourceField}()))")
         X map(Y y);
     }
 

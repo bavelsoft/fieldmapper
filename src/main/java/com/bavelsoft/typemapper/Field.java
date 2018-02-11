@@ -8,8 +8,8 @@ import java.util.function.Function;
 @Target(value={ElementType.METHOD})
 @Repeatable(Fields.class)
 public @interface Field {
-	String src();
-	String dst();
+	String source();
+	String target();
 	//Class mapper() default MapperDefault.class;
 }
 

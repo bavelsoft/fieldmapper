@@ -17,7 +17,7 @@ import com.bavelsoft.typemapper.FieldMatcher.StringPair;
 import com.bavelsoft.typemapper.TypeMap;
 
 class Generator {
-	static  TypeSpec.Builder generateMapperClass(Element element, Elements elementUtils, Types typeUtils) {
+	static TypeSpec.Builder generateMapperClass(Element element, Elements elementUtils, Types typeUtils) {
 		TypeSpec.Builder type = TypeSpec.classBuilder(getClassName(element));
 		if (element.getKind() == ElementKind.INTERFACE)
 			type.addSuperinterface(TypeName.get(element.asType()));

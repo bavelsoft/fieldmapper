@@ -5,18 +5,27 @@ import java.lang.annotation.Target;
 import java.util.function.BiFunction;
 import java.util.Collection;
 import java.util.Map;
+import com.bavelsoft.typemapper.matcher.FieldMatcherDefault;
 
 @Target(value={ElementType.METHOD})
 public @interface TypeMap {
-	static String DST = "dst", DST_FIELD = "dstField", SRC_FIELD = "srcField", DST_TYPE = "dstType", FUNC = "func";
+	static String TARGET_NAME = "targetName",
+		TARGET_TYPE = "targetType",
+		TARGET_FIELD_NAME = "targetFieldSetterName",
+		TARGET_FIELD_TYPE = "targetFieldType",
+		SOURCE_FIELD_GETTER = "sourceFieldGetter",
+		SOURCE_FIELD_TYPE = "sourceFieldType", //TODO
+		SOURCE_NAME = "sourceName", //TODO as part of perSourceParam
+		SOURCE_TYPE = "sourceType", //TODO
+		FUNC = "func";
 
-	static String firstCode = "${dstType} ${dst} = new ${dstType}()";
+	static String firstCode = "${targetType} ${targetName} = new ${targetType}()";
 	String first() default firstCode;
 
-	static String perFieldCode = "${dst}.${dstField}(${func}(${srcField}()))";
+	static String perFieldCode = "${targetName}.${targetFieldSetterName}(${func}(${sourceFieldGetter}))";
 	String perField() default perFieldCode;
 
-	static String lastCode = "return ${dst}";
+	static String lastCode = "return ${targetName}";
 	String last() default lastCode;
 
 	Class<? extends FieldMatcher> matcher() default FieldMatcherDefault.class;

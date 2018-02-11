@@ -7,13 +7,13 @@ import static org.junit.Assert.assertEquals;
 public class MultiArgTest {
 	public interface Foo {
 		@TypeMap
-		MyDst f(MySrc2 src2, MySrc3 src3);
+		MyTarget f(MySource2 source2, MySource3 source3);
 	}
 
 	@Test public void test()  {
 		Foo mapper = new MultiArgTest_FooTypeMapper();
-		MyDst dst = mapper.f(new MySrc2('q'), new MySrc3(123));
-		assertEquals(123, dst.x);
-		assertEquals('q', dst.z);
+		MyTarget target = mapper.f(new MySource2('q'), new MySource3(123));
+		assertEquals(123, target.x);
+		assertEquals('q', target.z);
 	}
 }

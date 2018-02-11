@@ -7,12 +7,12 @@ import static org.junit.Assert.assertEquals;
 public class SimplestTest {
 	public interface Foo {
 		@TypeMap
-		MyDst f(MySrc src);
+		MyTarget f(MySource source);
 	}
 
 	@Test public void test()  {
 		Foo mapper = new SimplestTest_FooTypeMapper();
-		MyDst dst = mapper.f(new MySrc(123));
-		assertEquals(123, dst.x);
+		MyTarget target = mapper.f(new MySource(123));
+		assertEquals(123, target.x);
 	}
 }

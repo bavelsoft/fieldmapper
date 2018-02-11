@@ -1,5 +1,10 @@
-nested support
-mapper support for @Field
+match map method with covariant parameter
+use matching constructor
 enums
-collections&arrays
+target field instead of setter
+source field instead of getter
+mapper support for @Field
+highlight @Field when unknown
+between array and collection
 use MapperDefault as the default without requiring users to
+nested support

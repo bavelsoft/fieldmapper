@@ -1,6 +1,6 @@
 package test;
 
-public class MyDst {
+public class MyTarget {
 	int x;
 	char z;
 	void setX(int x) { this.x = x; }

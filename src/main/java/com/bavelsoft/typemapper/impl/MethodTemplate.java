@@ -19,8 +19,8 @@ import com.bavelsoft.typemapper.TypeMap;
 import com.bavelsoft.typemapper.FieldMatcher.StringPair;
 
 class MethodTemplate {
-	private final Map<String, Element> dstFields;
-	private final Map<StringPair, Element> srcFields;
+	private final Map<String, Element> targetFields;
+	private final Map<StringPair, Element> sourceFields;
 	private final Map<String, String> templateData;
 	private final StrSubstitutor sub;
 	private final ExecutableElement methodElement;
@@ -28,42 +28,42 @@ class MethodTemplate {
 	private final Types typeUtils;
 
 	MethodTemplate(ExecutableElement methodElement, Elements elementUtils, Types typeUtils) {
-		TypeMirror dstType = Util.returnType(methodElement);
-		this.dstFields = initDstFields(dstType, elementUtils);
-		this.srcFields = initSrcFields(methodElement, elementUtils);
-		this.templateData = initMap(dstType);
+		TypeMirror targetType = Util.returnType(methodElement);
+		this.targetFields = initTargetFields(targetType, elementUtils);
+		this.sourceFields = initSourceFields(methodElement, elementUtils);
+		this.templateData = initMap(targetType);
 		this.sub = new StrSubstitutor(templateData);
 		this.methodElement = methodElement;
 		this.elementUtils = elementUtils;
 		this.typeUtils = typeUtils;
 	}
 
-	private static Map<String, String> initMap(TypeMirror dstType) {
+	private static Map<String, String> initMap(TypeMirror targetType) {
 	 	Map<String,String> templateData = new HashMap<>();
-		templateData.put(TypeMap.DST, "dst");
-		templateData.put(TypeMap.DST_TYPE, dstType.toString());
+		templateData.put(TypeMap.TARGET_NAME, "target");
+		templateData.put(TypeMap.TARGET_TYPE, targetType.toString());
 		return templateData;
 	}
 
-	private static Map<StringPair, Element> initSrcFields(ExecutableElement methodElement, Elements elementUtils) {
-		Map<StringPair, Element> srcFields = new HashMap<>();
+	private static Map<StringPair, Element> initSourceFields(ExecutableElement methodElement, Elements elementUtils) {
+		Map<StringPair, Element> sourceFields = new HashMap<>();
 		for (Element parameter : methodElement.getParameters()) {
 			String paramName = parameter.getSimpleName().toString();
-			Map<String, Element> singleSrcFields = getFields(parameter.asType(), elementUtils);
-			singleSrcFields.entrySet().removeIf(e->Util.returnType((ExecutableElement)e.getValue()) == null);
-			for (Map.Entry<String, Element> entry : singleSrcFields.entrySet()) {
-				StringPair key = StringPair.create(paramName, entry.getKey());
-				srcFields.put(key, entry.getValue());
+			Map<String, Element> singleSourceFields = getFields(parameter.asType(), elementUtils);
+			singleSourceFields.entrySet().removeIf(e->Util.returnType((ExecutableElement)e.getValue()) == null);
+			for (Map.Entry<String, Element> entry : singleSourceFields.entrySet()) {
+				StringPair key = StringPair.create(paramName, entry.getKey()+"()");
+				sourceFields.put(key, entry.getValue());
 			}
 		}
-		return srcFields;
+		return sourceFields;
 	}
 	
-	private static Map<String, Element> initDstFields(TypeMirror dstType, Elements elementUtils) {
-		Map<String, Element> dstFields = getFields(dstType, elementUtils);
-		dstFields.entrySet().removeIf(e->Util.paramType((ExecutableElement)e.getValue()) == null);
-		dstFields.entrySet().removeIf(e->e.getKey().equals("equals"));
-		return dstFields;
+	private static Map<String, Element> initTargetFields(TypeMirror targetType, Elements elementUtils) {
+		Map<String, Element> targetFields = getFields(targetType, elementUtils);
+		targetFields.entrySet().removeIf(e->Util.paramType((ExecutableElement)e.getValue()) == null);
+		targetFields.entrySet().removeIf(e->e.getKey().equals("equals"));
+		return targetFields;
 	}
 
 	void setPerFieldValues(Map.Entry<String, StringPair> entry) {
@@ -71,20 +71,20 @@ class MethodTemplate {
 	}
 
 	void setPerFieldValues(Map.Entry<String, StringPair> entry, TypeElement classWithMapMethod) {
-		templateData.put(TypeMap.DST_FIELD, entry.getKey());
-		templateData.put(TypeMap.SRC_FIELD, entry.getValue().toString());
-			TypeMirror dstType, srcType;
+		templateData.put(TypeMap.TARGET_FIELD_NAME, entry.getKey());
+		templateData.put(TypeMap.SOURCE_FIELD_GETTER, entry.getValue().toString());
+			TypeMirror targetType, sourceType;
 		try {
-			dstType = Util.paramType(dstFields.get(entry.getKey()));
+			targetType = Util.paramType(targetFields.get(entry.getKey()));
 		} catch (NullPointerException e) {
 			throw new ExpectedException("no setter for "+entry.getKey());
 		}
 		try {
-			srcType = Util.returnType(srcFields.get(entry.getValue()));
+			sourceType = Util.returnType(sourceFields.get(entry.getValue()));
 		} catch (NullPointerException e) {
 			throw new ExpectedException("no getter for "+entry.getValue());
 		}
-		templateData.put(TypeMap.FUNC, getMapMethodName(dstType, srcType, classWithMapMethod));
+		templateData.put(TypeMap.FUNC, getMapMethodName(targetType, sourceType, classWithMapMethod));
 	}
 
 	String replace(String text) {
@@ -95,12 +95,12 @@ class MethodTemplate {
 		}
 	}
 
-	Collection<String> getDstFields() {
-		return dstFields.keySet();
+	Collection<String> getTargetFields() {
+		return targetFields.keySet();
 	}
 	
-	Collection<StringPair> getSrcFields() {
-		return srcFields.keySet();
+	Collection<StringPair> getSourceFields() {
+		return sourceFields.keySet();
 	}
 	
 	private static Map<String,Element> getFields(TypeMirror typeMirror, Elements elementUtils) {
@@ -119,16 +119,16 @@ class MethodTemplate {
 			return null;
 	}
 
-	private String getMapMethodName(TypeMirror dstType, TypeMirror srcType, TypeElement classWithMapMethod) {
+	private String getMapMethodName(TypeMirror targetType, TypeMirror sourceType, TypeElement classWithMapMethod) {
 		if (classWithMapMethod == null)
 			classWithMapMethod = (TypeElement)methodElement.getEnclosingElement();
 		//TODO use less exact map method
 		//TODO complain of ambiguous map method
-		if (srcType == null || dstType == null)
+		if (sourceType == null || targetType == null)
 			return "";
 		for (Element e : elementUtils.getAllMembers(classWithMapMethod))
 			if (e.getKind() == ElementKind.METHOD)
-				if (isSame(srcType, Util.paramType(e)) && isSame(dstType, Util.returnType(e)))
+				if (isSame(sourceType, Util.paramType(e)) && isSame(targetType, Util.returnType(e)))
 					return e.getSimpleName().toString();
 		return "";
 	}

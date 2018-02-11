@@ -7,15 +7,15 @@ import static org.junit.Assert.assertEquals;
 public class MultiMethodTest {
 	public interface Foo {
 		@TypeMap
-		MyDst f(MySrc src);
+		MyTarget f(MySource source);
 
 		@TypeMap
-		MyDst g(MySrc src);
+		MyTarget g(MySource source);
 	}
 
 	@Test public void test()  {
 		Foo mapper = new MultiMethodTest_FooTypeMapper();
-		MyDst dst = mapper.f(new MySrc(123));
-		assertEquals(123, dst.x);
+		MyTarget target = mapper.f(new MySource(123));
+		assertEquals(123, target.x);
 	}
 }

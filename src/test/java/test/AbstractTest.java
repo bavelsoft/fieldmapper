@@ -7,14 +7,14 @@ import static org.junit.Assert.assertEquals;
 public class AbstractTest {
 	public interface Moo {
 		@TypeMap
-		MyDst f(MySrc src);
+		MyTarget f(MySource source);
 
 		void g();
 	}
 
 	@Test public void test()  {
 		Moo mapper = new AbstractTest_MooTypeMapper() { public void g() {} };
-		MyDst dst = mapper.f(new MySrc(123));
-		assertEquals(123, dst.x);
+		MyTarget target = mapper.f(new MySource(123));
+		assertEquals(123, target.x);
 	}
 }

@@ -22,13 +22,13 @@ class FieldMatchSupport {
 	static final Class<Fields> fieldsClass = Fields.class;
 
 	static Map<String, StringPair> getMatchedFields(ExecutableElement methodElement, MethodTemplate template) {
-		List<String> dstFields = new ArrayList<>(template.getDstFields());
-		List<StringPair> srcFields = new ArrayList<>(template.getSrcFields());
+		List<String> targetFields = new ArrayList<>(template.getTargetFields());
+		List<StringPair> sourceFields = new ArrayList<>(template.getSourceFields());
 		Map<String, StringPair> matchedFields = getExplicitFieldMap(methodElement);
 		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		try {
 			FieldMatcher matcher = Util.classValue(annotation::matcher);
-			matcher.match(matchedFields, dstFields, srcFields);
+			matcher.match(matchedFields, targetFields, sourceFields);
 			return matchedFields;
 		} catch (RuntimeException e) {
 			throw e;
@@ -51,11 +51,20 @@ class FieldMatchSupport {
 		}
 		Map<String, StringPair> explicitFields = new HashMap<>();
 		for (AnnotationMirror m : mirrors) {
-			String[] src = Util.getAnnotationValue(m, "src").getValue().toString().split("\\.", 2);
+			String[] source = Util.getAnnotationValue(m, "source").getValue().toString().split("\\.", 2);
+
 			//TODO error checking
-			explicitFields.put(Util.getAnnotationValue(m, "dst").getValue().toString(),
-				StringPair.create(src[0], src[1]));
+			String target = Util.getAnnotationValue(m, "target").getValue().toString();
+			explicitFields.put(chopTrailingParens(target),
+				StringPair.create(source[0], source[1]));
 		}
 		return explicitFields;
+	}
+
+	static String chopTrailingParens(String s) {
+		if (s.endsWith("()"))
+			return s.substring(0, s.length()-2);
+		else
+			throw new ExpectedException("@Field param `"+s+"' must end with () for now");
 	}
 }

@@ -1,8 +1,8 @@
 package test;
 
-public class MyBoxedSrc {
+public class MyBoxedSource {
 	Integer x;
-	MyBoxedSrc(Integer x) { this.x = x; }
+	MyBoxedSource(Integer x) { this.x = x; }
 	Integer getX() { return x; }
 
 	char getZ() { return 'z'; }
