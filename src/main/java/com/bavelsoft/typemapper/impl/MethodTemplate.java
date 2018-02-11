@@ -122,11 +122,22 @@ class MethodTemplate {
 		//TODO complain of ambiguous map method
 		if (sourceType == null || targetType == null)
 			return "";
+		Element matchingMapMethod = null;
 		for (Element e : elementUtils.getAllMembers(classWithMapMethod))
 			if (e.getKind() == ElementKind.METHOD)
-				if (Util.isSame(sourceType, Util.paramType(e), typeUtils)
-				&& Util.isSame(targetType, Util.returnType(e), typeUtils))
-					return e.getSimpleName().toString();
-		return "";
+				if (Util.isAssignable(sourceType, Util.paramType(e), typeUtils)
+				&& Util.isAssignable(targetType, Util.returnType(e), typeUtils)) {
+					if (matchingMapMethod == null
+					        || Util.isAssignable(Util.paramType(matchingMapMethod), Util.paramType(e), typeUtils)) {
+						matchingMapMethod = e;
+					} else if (Util.isAssignable(Util.paramType(e), Util.paramType(matchingMapMethod), typeUtils)) {
+						//leave it
+					} else {
+						throw new ExpectedException("Umabiguous matching methods: "
+									    +matchingMapMethod+" and "+e);
+					}
+				}
+		//TODO disambiguate based on returntype if paramtypes same
+		return matchingMapMethod == null ? "" : matchingMapMethod.getSimpleName().toString();
 	}
 }
