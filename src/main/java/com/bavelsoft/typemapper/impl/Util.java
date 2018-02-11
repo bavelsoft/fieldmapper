@@ -84,12 +84,12 @@ class Util {
 			return null;
 	}
 
-	static boolean isSame(TypeMirror a, TypeMirror b, Types typeUtils) {
+	static boolean isAssignable(TypeMirror a, TypeMirror b, Types typeUtils) {
 		if (a == b)
 			return true;
 		else if (a == null || b == null)
 			return false;
 		else
-			return typeUtils.isSameType(a, b);
+			return typeUtils.isAssignable(a, b);
 	}
 }
