@@ -34,14 +34,14 @@ class MethodTemplate {
 		TypeMirror targetType = Util.returnType(methodElement);
 		this.targetFields = initTargetFields(targetType, elementUtils);
 		this.sourceFields = initSourceFields(methodElement, elementUtils);
-		this.templateData = initMap(targetType);
+		this.templateData = initTemplateData(targetType);
 		this.sub = new StrSubstitutor(templateData);
 		this.methodElement = methodElement;
 		this.elementUtils = elementUtils;
 		this.typeUtils = typeUtils;
 	}
 
-	private static Map<String, String> initMap(TypeMirror targetType) {
+	private static Map<String, String> initTemplateData(TypeMirror targetType) {
 	 	Map<String,String> templateData = new HashMap<>();
 		templateData.put(TypeMap.TARGET_NAME, "target");
 		templateData.put(TypeMap.TARGET_TYPE, targetType.toString());
