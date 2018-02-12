@@ -50,8 +50,8 @@ To override (or disambiguate) particular fields, use the @Field annotation, alwa
 
     interface Foo {
         @TypeMapper
-        @Field(source="y.getA", target="setB")
-        @Field(source="y.getB", target="setC")
+        @Field(source="y.getA()", target="setB()")
+        @Field(source="z.getB()", target="setC()")
         X map(Y y, Z z);
     }
 
