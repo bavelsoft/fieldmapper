@@ -9,6 +9,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -115,6 +116,7 @@ class MethodTemplate {
 		return fields;
 	}
 	
+	//TODO refactor
 	private String getMapMethodName(TypeMirror targetType, TypeMirror sourceType, TypeElement classWithMapMethod) {
 		if (classWithMapMethod == null)
 			classWithMapMethod = (TypeElement)methodElement.getEnclosingElement();
@@ -154,6 +156,19 @@ class MethodTemplate {
 					throw new ExpectedException("Ambiguous matching methods: "+matchingMapMethod+" and "+e);
 				}
 			}
-		return matchingMapMethod == null ? "" : matchingMapMethod.getSimpleName().toString();
+		if (matchingMapMethod == null) {
+			if (!typeUtils.isSameType(sourceType, targetType)) {
+				TypeElement targetElement = (TypeElement)((DeclaredType)targetType).asElement();
+				for (Element e : elementUtils.getAllMembers(targetElement))
+					if (e.getKind() == ElementKind.CONSTRUCTOR) {
+						TypeMirror paramType = Util.paramType(e);
+						if (paramType != null && typeUtils.isAssignable(sourceType, paramType))
+							return "new "+targetElement.getQualifiedName();
+					}
+			}
+			return "";
+		} else {
+			return matchingMapMethod.getSimpleName().toString();
+		}
 	}
 }

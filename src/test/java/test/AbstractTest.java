@@ -12,8 +12,21 @@ public class AbstractTest {
 		void g();
 	}
 
-	@Test public void test()  {
+	public static abstract class Woo {
+		@TypeMap
+		abstract MyTarget f(MySource source);
+
+		abstract void g();
+	}
+
+	@Test public void testInterface()  {
 		Moo mapper = new AbstractTest_MooTypeMapper() { public void g() {} };
+		MyTarget target = mapper.f(new MySource(123));
+		assertEquals(123, target.x);
+	}
+
+	@Test public void testAbstractClass()  {
+		Woo mapper = new AbstractTest_WooTypeMapper() { public void g() {} };
 		MyTarget target = mapper.f(new MySource(123));
 		assertEquals(123, target.x);
 	}

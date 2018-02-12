@@ -2,32 +2,42 @@ Typemapper is a Java annotation processor for the generation of type-safe and pe
 
 Typemapper generates implementations of @TypeMap annotated methods.
 
-To get automatically generated code for mapping objects of class Y to objects of class X, annotate an abstract method:
+To get automatically generated code for mapping objects of class YourSource to objects of class YourTarget, annotate an abstract method:
 
     interface Foo {
         @TypeMapper
-        X map(Y y);
+        YourTarget map(YourSource y);
     }
 
-And you'll get a generated class FooTypeMapper which implements Foo, and which matches up the setters of X with the getters of Y, something like:
+And you'll get a generated class FooTypeMapper which implements Foo, and which matches up the setters of YourTarget with the getters of YourSource, something like:
 
     class FooTypeMapper implements Foo {
-        public X map(Y y) {
-            X target = new X();
-            target.setA(y.getA());
-            target.setWee(y.getWee());
+        public YourTarget map(YourSource y) {
+            YourTarget target = new YourTarget();
+            target.setBar(y.getBar());
+            target.setBaz(y.get_baz());
             target.setQux(y.getQux());
             return target;
         }
+    }
+
+The generated code is smart enough to convert between types using a constructor of the target type:
+
+    class YourSource {
+        Set getX() {...}
+    }
+
+    class YourTarget {
+        void setX(ArrayList x) {...} //because ArrayList has a constructor which accepts a Collection
     }
 
 You can also define methods to convert between fields types, and the generated code will call them:
 
     interface Foo {
         @TypeMapper
-        X map(Y y);
+        YourTarget map(YourSource y);
 
-        default SubX map(SubY s) {
+        default YourSubTarget map(YourSubSource s) {
             ...
         }
     }
@@ -36,14 +46,14 @@ It doesn't matter what the conversion methods are called, so long as their types
 
     interface Foo extends MapperDefault {
         @TypeMapper
-        X map(Y y);
+        YourTarget map(YourSource y);
     }
 
 You can also annotate methods that accept multiple parameters, so long as they don't have ambiguously mapped fields:
 
     interface Foo {
         @TypeMapper
-        X map(Y y, Z z);
+        YourTarget map(YourSource y, YourOtherSource z);
     }
 
 To override (or disambiguate) particular fields, use the @Field annotation, always specifying the source parameter name as shown here:
@@ -52,14 +62,14 @@ To override (or disambiguate) particular fields, use the @Field annotation, alwa
         @TypeMapper
         @Field(source="y.getA()", target="setB()")
         @Field(source="z.getB()", target="setC()")
-        X map(Y y, Z z);
+        YourTarget map(YourSource y, YourOtherSource z);
     }
 
 In addition to warning about mapping ambiguity, by default TypeMapper warns about unmapped setters on the destination class. To alter this behavior, configure a different matcher (one of FieldMatcherParanoid, FieldMatcherSource, FieldMatcherDefault, FieldMatcherRelaxed):
 
     interface Foo {
         @TypeMapper(matcher=FieldMatcherDefault.class)
-        X map(Y y);
+        YourTarget map(YourSource y);
     }
 
 
@@ -67,27 +77,27 @@ You can also override the code generated for each field, or at the start or end 
 
     interface Foo {
         @TypeMapper(perFieldCode = "if (${sourceFields} != null) ${target}.${targetField}(${func}(${sourceField}()))")
-        X map(Y y);
+        YourTarget map(YourSource y);
     }
 
 If you'd like to use dependency injection, define abstract getter methods and wire up the generated class properly.
 
     interface Foo {
         @TypeMapper
-        X map(Y y);
+        YourTarget map(YourSource y);
 
-        default SubX map(SubY s) {
+        default YourSubTarget map(YourSubSource s) {
             return getTranslator().translate(s);
         }
 
-        SubXYTranslator getTranslator();
+        SubTranslator getTranslator();
     }
 
     @Singleton
     class MyFooTypeMapper extends FooTypeMapper {
-        @Inject SubXYTranslator translator;
+        @Inject SubTranslator translator;
 
-        SubXYTranslator getTranslator() { return translator; }
+        SubTranslator getTranslator() { return translator; }
     }
 
 Check the [unit tests](src/test/java/test/) for more info.
