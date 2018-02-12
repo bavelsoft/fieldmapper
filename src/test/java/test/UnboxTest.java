@@ -11,6 +11,14 @@ public class UnboxTest {
 		MyTarget f(MyBoxedSource source);
 	}
 
+	static class MyBoxedSource {
+		Integer x;
+		MyBoxedSource(Integer x) { this.x = x; }
+		Integer getX() { return x; }
+	
+		char getZ() { return 'z'; }
+	}
+
 	@Test public void test()  {
 		Foo mapper = new UnboxTest_FooTypeMapper();
 		MyTarget target = mapper.f(new MyBoxedSource(123));
