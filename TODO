@@ -1,7 +1,7 @@
 use matching constructor
 enums
-target field instead of setter
 source field instead of getter
+target field instead of setter
 mapper support for @Field
 highlight @Field when unknown
 between array and collection

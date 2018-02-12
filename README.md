@@ -21,7 +21,7 @@ And you'll get a generated class FooTypeMapper which implements Foo, and which m
         }
     }
 
-If any of the types of the getters and setters don't match up, it will automatically call your conversion method:
+You can also define methods to convert between fields types, and the generated code will call them:
 
     interface Foo {
         @TypeMapper
@@ -32,7 +32,7 @@ If any of the types of the getters and setters don't match up, it will automatic
         }
     }
 
-It doesn't matter what the conversion methods are called, so long as their types match. The most specific parameter matches first, and then the least specific return type. You can include conversion methods from other files by extending or implementing other interfaces or classes. To get automatic unboxing that doesn't throw NullPointerExceptions, you can extend or implement a builtin interface:
+It doesn't matter what the conversion methods are called, so long as their types match. The most specific parameter matches first, and then the least specific return type. You can include conversion methods from other files by extending or implementing other interfaces or classes. Typemapper provides an interface `MapperDefault` with simple conversions, e.g. NullPointer safe unboxing, using toString to convert any object to a String:
 
     interface Foo extends MapperDefault {
         @TypeMapper
@@ -90,4 +90,4 @@ If you'd like to use dependency injection, define abstract getter methods and wi
         SubXYTranslator getTranslator() { return translator; }
     }
 
-Check the (unit tests)[src/test/java/test/] for more info.
+Check the [unit tests](src/test/java/test/) for more info.
