@@ -32,7 +32,7 @@ If any of the types of the getters and setters don't match up, it will automatic
         }
     }
 
-It doesn't matter what the conversion methods are called, so long as their types match. You can include conversion methods from other files by extending or implementing other interfaces or classes. To get automatic unboxing that doesn't throw NullPointerExceptions, you can extend or implement a builtin interface:
+It doesn't matter what the conversion methods are called, so long as their types match. The most specific parameter matches first, and then the least specific return type. You can include conversion methods from other files by extending or implementing other interfaces or classes. To get automatic unboxing that doesn't throw NullPointerExceptions, you can extend or implement a builtin interface:
 
     interface Foo extends MapperDefault {
         @TypeMapper
@@ -90,4 +90,4 @@ If you'd like to use dependency injection, define abstract getter methods and wi
         SubXYTranslator getTranslator() { return translator; }
     }
 
-In general, we add features if there isn't otherwise a reasonable way to accomplish their goal. For example, the @Field annotation is needed for the sake of safety; if desired we can statically verify that all getters are matched. Look for TODOs in the code to see planned features, and look at the unit tests for usage help.
+Check the (unit tests)[src/test/java/test/] for more info.

@@ -128,13 +128,13 @@ class MethodTemplate {
 				if (paramType == null || returnType == null)
 					continue;
 				if (typeUtils.isAssignable(sourceType, paramType)
-				 && typeUtils.isAssignable(targetType, returnType)) {
+				 && typeUtils.isAssignable(returnType, targetType)) {
 					if (matchingMapMethod == null) {
 						matchingMapMethod = e;
 						continue;
 					}
 					boolean a = typeUtils.isAssignable(paramType, Util.paramType(matchingMapMethod));
-					boolean b = typeUtils.isAssignable(Util.paramType(matchingMapMethod), paramType));
+					boolean b = typeUtils.isAssignable(Util.paramType(matchingMapMethod), paramType);
 					if (a && !b) {
 						matchingMapMethod = e;
 						continue;
@@ -142,8 +142,8 @@ class MethodTemplate {
 						//leave matchingMapMethod
 						continue;
 					}
-					boolean c = typeUtils.isAssignable(returnType, Util.returnType(matchingMapMethod));
-					boolean d = typeUtils.isAssignable(Util.returnType(matchingMapMethod), returnType));
+					boolean d = typeUtils.isAssignable(returnType, Util.returnType(matchingMapMethod));
+					boolean c = typeUtils.isAssignable(Util.returnType(matchingMapMethod), returnType);
 					if (c && !d) {
 						matchingMapMethod = e;
 						continue;
