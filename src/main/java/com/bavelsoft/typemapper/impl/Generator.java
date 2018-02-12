@@ -40,7 +40,7 @@ class Generator {
 		return type;
 	}
 
-	static MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement, Elements elementUtils, Types typeUtils) {
+	private static MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement, Elements elementUtils, Types typeUtils) {
 		TypeMap annotation = methodElement.getAnnotation(FieldMatchSupport.typeMapClass);
 		MethodTemplate template = new MethodTemplate(methodElement, elementUtils, typeUtils);
 
