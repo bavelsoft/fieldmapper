@@ -60,9 +60,9 @@ To override (or disambiguate) particular fields, use the @Mapping annotation, al
 
     interface Foo {
         @TypeMapper(fieldMappingsByName={
-        @Mapping(source="y.getA()", target="setB()")
-        @Mapping(source="z.getB()", target="setC()")
-	})
+            @Mapping(source="y.getA()", target="setB()")
+            @Mapping(source="z.getB()", target="setC()")
+        })
         YourTarget map(YourSource y, YourOtherSource z);
     }
 
