@@ -10,4 +10,5 @@ public interface MapperDefault {
 	default char map(Character x) { return x == null ? 0 : x; }
 	default boolean map(Boolean x) { return x == null ? false : x; }
 	default String map(Object x) { return x == null ? null : x.toString(); }
+	default long map(java.util.Date x) { return x.getTime(); }
 }
