@@ -18,9 +18,7 @@ import com.bavelsoft.typemapper.FieldMatchStrategy.StringPair;
 class FieldMatcher {
 	static final Class<TypeMap> typeMapClass = TypeMap.class;
 
-	static Map<String, StringPair> getMatchedFields(ExecutableElement methodElement, MethodTemplate template) {
-		List<String> targetFields = new ArrayList<>(template.getTargetFields());
-		List<StringPair> sourceFields = new ArrayList<>(template.getSourceFields());
+	static Map<String, StringPair> getMatchedFields(ExecutableElement methodElement, Collection<String> targetFields, Collection<StringPair> sourceFields) {
 		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		Map<String, StringPair> matchedFields = new HashMap<>();
 		for (Mapping m : annotation.fieldMappingsByName()) {

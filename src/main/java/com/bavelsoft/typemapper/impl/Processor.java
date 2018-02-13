@@ -38,6 +38,7 @@ public class Processor extends AbstractProcessor {
 	private Elements elementUtils;
 	private Types typeUtils;
 	private Filer filer;
+	private Generator generator;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment env) {
@@ -46,6 +47,7 @@ public class Processor extends AbstractProcessor {
 		elementUtils = env.getElementUtils();
 		typeUtils = env.getTypeUtils();
 		filer = env.getFiler();
+		generator = new Generator(elementUtils, typeUtils);
 	}
 
 	@Override
@@ -55,7 +57,7 @@ public class Processor extends AbstractProcessor {
 			elements.add(element.getEnclosingElement());
 		for (Element element : elements) {
 			try {
-				write(element, Generator.generateMapperClass(element, elementUtils, typeUtils).build());
+				write(element, generator.generateMapperClass(element).build());
 			} catch (ExpectedException e) {
 				messager.printMessage(Diagnostic.Kind.ERROR,
 						      "couldn't generate field mapper for "+element+" : "+ e.getMessage());
@@ -69,7 +71,7 @@ public class Processor extends AbstractProcessor {
 
 	private void write(Element element, TypeSpec typeSpec) throws IOException {
 		String packageName = elementUtils.getPackageOf(element).toString();
-		JavaFileObject javaFileObject = filer.createSourceFile(packageName+"."+Generator.getClassName(element));
+		JavaFileObject javaFileObject = filer.createSourceFile(packageName+"."+generator.getClassName(element));
 		Writer writer = javaFileObject.openWriter();
 		JavaFile javaFile = JavaFile.builder(packageName, typeSpec).build();
 		javaFile.writeTo(writer);

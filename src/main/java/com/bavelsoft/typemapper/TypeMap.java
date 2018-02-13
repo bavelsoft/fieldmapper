@@ -35,7 +35,7 @@ public @interface TypeMap {
 	public @interface Mapping {
 		String source();
 		String target();
-		//Class mapper() default MapperDefault.class;
+		//Class mapper() default MapperDefault.class; TODO
 	}
 }
 

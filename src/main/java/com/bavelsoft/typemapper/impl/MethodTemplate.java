@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -27,52 +29,31 @@ class MethodTemplate {
 	private final Map<StringPair, Element> sourceFields;
 	private final Map<String, String> templateData;
 	private final StrSubstitutor sub;
+	private final Set<EnumMapper> enumMappers;
 	private final ExecutableElement methodElement;
 	private final Elements elementUtils;
 	private final Types typeUtils;
 
-	MethodTemplate(ExecutableElement methodElement, Elements elementUtils, Types typeUtils) {
-		TypeMirror targetType = Util.returnType(methodElement);
-		this.targetFields = initTargetFields(targetType, elementUtils);
-		this.sourceFields = initSourceFields(methodElement, elementUtils);
-		this.templateData = initTemplateData(targetType);
-		this.sub = new StrSubstitutor(templateData);
+	MethodTemplate(ExecutableElement methodElement, Map<String, Element> targetFields, Map<StringPair, Element> sourceFields, Elements elementUtils, Types typeUtils) {
+		this.targetFields = targetFields;
+		this.sourceFields = sourceFields;
 		this.methodElement = methodElement;
+		this.enumMappers = new HashSet<>();
 		this.elementUtils = elementUtils;
 		this.typeUtils = typeUtils;
-	}
-
-	private static Map<String, String> initTemplateData(TypeMirror targetType) {
-	 	Map<String,String> templateData = new HashMap<>();
+		this.templateData = new HashMap<>();
 		templateData.put(TypeMap.TARGET_NAME, "target");
-		templateData.put(TypeMap.TARGET_TYPE, targetType.toString());
-		return templateData;
-	}
-
-	private static Map<StringPair, Element> initSourceFields(ExecutableElement methodElement, Elements elementUtils) {
-		Map<StringPair, Element> sourceFields = new HashMap<>();
-		for (Element parameter : methodElement.getParameters()) {
-			String paramName = parameter.getSimpleName().toString();
-			Map<String, Element> singleSourceFields = getFields(parameter.asType(), elementUtils);
-			singleSourceFields.entrySet().removeIf(e->Util.returnType((ExecutableElement)e.getValue()) == null);
-			for (Map.Entry<String, Element> entry : singleSourceFields.entrySet()) {
-				StringPair key = StringPair.create(paramName, entry.getKey()+"()");
-				sourceFields.put(key, entry.getValue());
-			}
-		}
-		return sourceFields;
-	}
-	
-	private static Map<String, Element> initTargetFields(TypeMirror targetType, Elements elementUtils) {
-		Map<String, Element> targetFields = getFields(targetType, elementUtils);
-		targetFields.entrySet().removeIf(e->Util.paramType((ExecutableElement)e.getValue()) == null);
-		targetFields.entrySet().removeIf(e->e.getKey().equals("equals"));
-		return targetFields;
+		templateData.put(TypeMap.TARGET_TYPE, Util.returnType(methodElement).toString());
+		this.sub = new StrSubstitutor(templateData);
 	}
 
 	void setPerFieldValues(Map.Entry<String, StringPair> entry) {
 		setPerFieldValues(entry, null);
 	}
+
+//TODO source field support 
+
+//TODO target field support 
 
 	void setPerFieldValues(Map.Entry<String, StringPair> entry, TypeElement classWithMapMethod) {
 		templateData.put(TypeMap.TARGET_FIELD_NAME, entry.getKey());
@@ -99,23 +80,10 @@ class MethodTemplate {
 		}
 	}
 
-	Collection<String> getTargetFields() {
-		return targetFields.keySet();
+	Set<EnumMapper> getEnumMappers() {
+		return enumMappers;
 	}
-	
-	Collection<StringPair> getSourceFields() {
-		return sourceFields.keySet();
-	}
-	
-	private static Map<String,Element> getFields(TypeMirror typeMirror, Elements elementUtils) {
-		Map<String,Element> fields = new HashMap<>();
-		TypeElement element = (TypeElement)Util.asElement(typeMirror);
-		for (Element fieldElement : elementUtils.getAllMembers(element))
-			if (fieldElement.getKind() == ElementKind.METHOD)
-				fields.put(fieldElement.getSimpleName().toString(), fieldElement); //TODO overloading!
-		return fields;
-	}
-	
+
 	//TODO refactor
 	private String getMapMethodName(TypeMirror targetType, TypeMirror sourceType, TypeElement classWithMapMethod) {
 		if (classWithMapMethod == null)
@@ -166,9 +134,34 @@ class MethodTemplate {
 							return "new "+targetElement.getQualifiedName();
 					}
 			}
+			String enumMapperName = getEnumMapMethodName(sourceType, targetType);
+			if (enumMapperName != null) {
+				enumMappers.add(new EnumMapper(enumMapperName, sourceType, targetType));
+				return enumMapperName;
+			}
 			return "";
 		} else {
 			return matchingMapMethod.getSimpleName().toString();
 		}
+	}
+
+	static class EnumMapper {
+		String name;
+		TypeMirror sourceType, targetType;
+
+		EnumMapper(String name, TypeMirror sourceType, TypeMirror targetType) {
+			this.name = name;
+			this.sourceType = sourceType;
+			this.targetType = targetType;
+		}
+	}
+
+	private static String getEnumMapMethodName(TypeMirror sourceType, TypeMirror targetType) {
+		if (sourceType instanceof DeclaredType && targetType instanceof DeclaredType
+		 && ((DeclaredType)sourceType).asElement().getKind() == ElementKind.ENUM
+		 && ((DeclaredType)targetType).asElement().getKind() == ElementKind.ENUM)
+			return "to"+((DeclaredType)targetType).asElement().getSimpleName().toString();
+		else
+			return null;
 	}
 }
