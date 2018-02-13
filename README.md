@@ -21,6 +21,8 @@ And you'll get a generated class FooTypeMapper which implements Foo, and which m
         }
     }
 
+You must be using Java 8 source code or later.
+
 The generated code is smart enough to convert between types using a constructor of the target type:
 
     class YourSource {
@@ -102,3 +104,7 @@ If you'd like to use dependency injection, define abstract getter methods and wi
     }
 
 Check the [unit tests](src/test/java/test/) for more info.
+
+Build using maven:
+
+    mvn clean install
