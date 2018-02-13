@@ -66,10 +66,10 @@ To override (or disambiguate) particular fields, use the @Mapping annotation, al
         YourTarget map(YourSource y, YourOtherSource z);
     }
 
-In addition to warning about mapping ambiguity, by default TypeMapper warns about unmapped setters on the destination class. To alter this behavior, configure a different matcher (one of FieldMatcherParanoid, FieldMatcherSource, FieldMatcherDefault, FieldMatcherRelaxed):
+In addition to warning about mapping ambiguity, by default TypeMapper warns about unmapped setters on the destination class. To alter this behavior, configure a different matcher (one of FieldMatchParanoid, FieldMatchSource, FieldMatchRelaxed):
 
     interface Foo {
-        @TypeMapper(matcher=FieldMatcherDefault.class)
+        @TypeMapper(matcher=FieldMatchDefault.class)
         YourTarget map(YourSource y);
     }
 
