@@ -56,12 +56,13 @@ You can also annotate methods that accept multiple parameters, so long as they d
         YourTarget map(YourSource y, YourOtherSource z);
     }
 
-To override (or disambiguate) particular fields, use the @Field annotation, always specifying the source parameter name as shown here:
+To override (or disambiguate) particular fields, use the @Mapping annotation, always specifying the source parameter name as shown here:
 
     interface Foo {
-        @TypeMapper
-        @Field(source="y.getA()", target="setB()")
-        @Field(source="z.getB()", target="setC()")
+        @TypeMapper(fieldMappingsByName={
+        @Mapping(source="y.getA()", target="setB()")
+        @Mapping(source="z.getB()", target="setC()")
+	})
         YourTarget map(YourSource y, YourOtherSource z);
     }
 

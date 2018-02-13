@@ -30,7 +30,7 @@ public @interface TypeMap {
 
 	Class<? extends FieldMatchStrategy> matcher() default FieldMatchDefault.class;
 
-	Mapping[] mappingsByName() default {};
+	Mapping[] fieldMappingsByName() default {};
 
 	public @interface Mapping {
 		String source();

@@ -23,7 +23,7 @@ class FieldMatcher {
 		List<StringPair> sourceFields = new ArrayList<>(template.getSourceFields());
 		TypeMap annotation = methodElement.getAnnotation(typeMapClass);
 		Map<String, StringPair> matchedFields = new HashMap<>();
-		for (Mapping m : annotation.mappingsByName()) {
+		for (Mapping m : annotation.fieldMappingsByName()) {
 			//TODO error checking
 			String[] source = m.source().split("\\.", 2);
 			matchedFields.put(chopTrailingParens(m.target()),

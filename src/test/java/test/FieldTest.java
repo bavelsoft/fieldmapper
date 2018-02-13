@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 
 public class FieldTest {
 	public interface Foo {
-		@TypeMap(mappingsByName={
+		@TypeMap(fieldMappingsByName={
 		@Mapping(source="source.getY()", target="setX()")
 		})
 		MyTarget f(MySource source);
