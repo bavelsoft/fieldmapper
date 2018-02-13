@@ -40,7 +40,7 @@ class FieldMatcher {
 		}
 	}
 
-	static String chopTrailingParens(String s) {
+	private static String chopTrailingParens(String s) {
 		if (s.endsWith("()"))
 			return s.substring(0, s.length()-2);
 		else
