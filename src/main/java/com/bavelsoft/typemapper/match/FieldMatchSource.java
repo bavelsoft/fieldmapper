@@ -1,9 +1,9 @@
-package com.bavelsoft.typemapper.matcher;
+package com.bavelsoft.typemapper.match;
 
 import java.util.Collection;
 import com.bavelsoft.typemapper.ExpectedException;
 
-public class FieldMatcherSource extends FieldMatcherParanoid {
+public class FieldMatchSource extends FieldMatchParanoid {
 	@Override
 	protected void throwIfTargetFieldsUnmatched(Collection<String> unmatchedTargetFields) {
 		//don't throw

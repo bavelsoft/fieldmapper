@@ -5,13 +5,13 @@ import java.io.Writer;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
+import java.util.Collections;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.tools.Diagnostic;
 import javax.lang.model.SourceVersion;
@@ -32,8 +32,8 @@ import static java.util.Arrays.asList;
 /*
  * Entry point, handles annotation processing api, calls Generator for the real work
  */
-@AutoService(Processor.class)
-public class TypeMapProcessor extends AbstractProcessor {
+@AutoService(javax.annotation.processing.Processor.class)
+public class Processor extends AbstractProcessor {
 	private Messager messager;
 	private Elements elementUtils;
 	private Types typeUtils;
@@ -51,7 +51,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotationsParam, RoundEnvironment env) {
 		Set<Element> elements = new HashSet<>();
-		for (Element element : env.getElementsAnnotatedWith(FieldMatchSupport.typeMapClass))
+		for (Element element : env.getElementsAnnotatedWith(FieldMatcher.typeMapClass))
 			elements.add(element.getEnclosingElement());
 		for (Element element : elements) {
 			try {
@@ -78,11 +78,7 @@ public class TypeMapProcessor extends AbstractProcessor {
 
 	@Override
 	public Set<String> getSupportedAnnotationTypes() {
-		return new HashSet<>(asList(
-			FieldMatchSupport.typeMapClass.getCanonicalName().toString(),
-			FieldMatchSupport.fieldClass.getCanonicalName().toString(),
-			FieldMatchSupport.fieldsClass.getCanonicalName().toString()
-		));
+		return Collections.singleton(FieldMatcher.typeMapClass.getCanonicalName().toString());
 	}
 
 	@Override

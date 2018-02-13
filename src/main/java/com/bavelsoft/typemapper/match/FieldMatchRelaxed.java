@@ -1,10 +1,10 @@
-package com.bavelsoft.typemapper.matcher;
+package com.bavelsoft.typemapper.match;
 
 import java.util.Collection;
-import com.bavelsoft.typemapper.FieldMatcher.StringPair;
+import com.bavelsoft.typemapper.FieldMatchStrategy.StringPair;
 import com.bavelsoft.typemapper.ExpectedException;
 
-public class FieldMatcherRelaxed extends FieldMatcherParanoid {
+public class FieldMatchRelaxed extends FieldMatchParanoid {
 	@Override
 	protected void throwIfAmbiguous(String targetField) {
 		//don't throw

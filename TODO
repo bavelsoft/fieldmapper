@@ -1,8 +1,8 @@
 enums
+mapper support for @Field
 source field instead of getter
 target field instead of setter
-mapper support for @Field
+use MapperDefault as the default without requiring users to
 highlight @Field when unknown
 between array and collection
-use MapperDefault as the default without requiring users to
 nested support

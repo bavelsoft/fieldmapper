@@ -1,14 +1,15 @@
 package test;
 
 import com.bavelsoft.typemapper.TypeMap;
-import com.bavelsoft.typemapper.Field;
+import com.bavelsoft.typemapper.TypeMap.Mapping;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class FieldTest {
 	public interface Foo {
-		@TypeMap
-		@Field(source="source.getY()", target="setX()")
+		@TypeMap(mappingsByName={
+		@Mapping(source="source.getY()", target="setX()")
+		})
 		MyTarget f(MySource source);
 	}
 

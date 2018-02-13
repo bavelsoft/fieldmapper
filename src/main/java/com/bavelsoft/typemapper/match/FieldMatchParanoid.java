@@ -1,15 +1,15 @@
-package com.bavelsoft.typemapper.matcher;
+package com.bavelsoft.typemapper.match;
 
 import java.util.function.BiFunction;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
-import com.bavelsoft.typemapper.FieldMatcher.StringPair;
-import com.bavelsoft.typemapper.FieldMatcher;
+import com.bavelsoft.typemapper.FieldMatchStrategy.StringPair;
+import com.bavelsoft.typemapper.FieldMatchStrategy;
 import com.bavelsoft.typemapper.ExpectedException;
 
-public class FieldMatcherParanoid implements FieldMatcher {
+public class FieldMatchParanoid implements FieldMatchStrategy {
 	@Override
 	public void match(Map<String, StringPair> matches, Collection<String> targetFields, Collection<StringPair> sourceFields) {
 		Map<String, StringPair> explicitMatches = new HashMap<>(matches);

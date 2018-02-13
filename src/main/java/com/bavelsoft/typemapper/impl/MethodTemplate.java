@@ -17,7 +17,7 @@ import javax.lang.model.type.TypeMirror;
 import org.apache.commons.text.StrSubstitutor;
 import com.bavelsoft.typemapper.ExpectedException;
 import com.bavelsoft.typemapper.TypeMap;
-import com.bavelsoft.typemapper.FieldMatcher.StringPair;
+import com.bavelsoft.typemapper.FieldMatchStrategy.StringPair;
 
 /*
  * This is the only real stateful class in the project.

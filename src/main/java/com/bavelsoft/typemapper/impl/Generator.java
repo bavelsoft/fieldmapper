@@ -12,12 +12,12 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ExecutableType;
-import com.bavelsoft.typemapper.FieldMatcher;
-import com.bavelsoft.typemapper.FieldMatcher.StringPair;
+import com.bavelsoft.typemapper.FieldMatchStrategy;
+import com.bavelsoft.typemapper.FieldMatchStrategy.StringPair;
 import com.bavelsoft.typemapper.TypeMap;
 
 /*
- * Central class, calls MethodTemplate and FieldMatchSupport
+ * Central class, calls MethodTemplate and FieldMatcher
  */
 class Generator {
 	static TypeSpec.Builder generateMapperClass(Element element, Elements elementUtils, Types typeUtils) {
@@ -29,7 +29,7 @@ class Generator {
 		
 		boolean hasUnimplemented = false;
 		for (Element e : elementUtils.getAllMembers((TypeElement)element)) {
-			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(FieldMatchSupport.typeMapClass) != null) {
+			if (e.getKind() == ElementKind.METHOD && e.getAnnotation(FieldMatcher.typeMapClass) != null) {
 				type.addMethod(generateMapperMethod((ExecutableElement)e, elementUtils, typeUtils).build());
 			} else if (e.getKind() == ElementKind.METHOD && Util.isAbstract(e)) {
 				hasUnimplemented = true;
@@ -41,13 +41,13 @@ class Generator {
 	}
 
 	static MethodSpec.Builder generateMapperMethod(ExecutableElement methodElement, Elements elementUtils, Types typeUtils) {
-		TypeMap annotation = methodElement.getAnnotation(FieldMatchSupport.typeMapClass);
+		TypeMap annotation = methodElement.getAnnotation(FieldMatcher.typeMapClass);
 		MethodTemplate template = new MethodTemplate(methodElement, elementUtils, typeUtils);
 
 		MethodSpec.Builder method = MethodSpec.overriding(methodElement)
 			.addStatement(template.replace(annotation.first()));
 
-		Map<String, StringPair> map = FieldMatchSupport.getMatchedFields(methodElement, template);
+		Map<String, StringPair> map = FieldMatcher.getMatchedFields(methodElement, template);
 		for (Map.Entry<String, StringPair> entry : map.entrySet()) {
 			template.setPerFieldValues(entry);
 			method.addStatement(template.replace(annotation.perField()));

@@ -5,7 +5,7 @@ import java.lang.annotation.Target;
 import java.util.function.BiFunction;
 import java.util.Collection;
 import java.util.Map;
-import com.bavelsoft.typemapper.matcher.FieldMatcherDefault;
+import com.bavelsoft.typemapper.match.FieldMatchDefault;
 
 @Target(value={ElementType.METHOD})
 public @interface TypeMap {
@@ -28,6 +28,14 @@ public @interface TypeMap {
 	static String lastCode = "return ${targetName}";
 	String last() default lastCode;
 
-	Class<? extends FieldMatcher> matcher() default FieldMatcherDefault.class;
+	Class<? extends FieldMatchStrategy> matcher() default FieldMatchDefault.class;
+
+	Mapping[] mappingsByName() default {};
+
+	public @interface Mapping {
+		String source();
+		String target();
+		//Class mapper() default MapperDefault.class;
+	}
 }
 
