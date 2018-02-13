@@ -14,9 +14,9 @@ And you'll get a generated class FooTypeMapper which implements Foo, and which m
     class FooTypeMapper implements Foo {
         public YourTarget map(YourSource y) {
             YourTarget target = new YourTarget();
-            target.setBar(y.getBar());
-            target.setBaz(y.get_baz());
-            target.setQux(y.getQux());
+            target.setBar(y.bar());
+            target.baz(y.get_baz());
+            target.setQux(y.isQux());
             return target;
         }
     }
