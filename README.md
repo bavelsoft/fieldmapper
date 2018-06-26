@@ -79,9 +79,11 @@ In addition to warning about mapping ambiguity, by default TypeMapper warns abou
 You can also override the code generated for each field, or at the start or end of the method:
 
     interface Foo {
-        @TypeMapper(perFieldCode = "if (${sourceFields} != null) ${target}.${targetField}(${func}(${sourceField}()))")
+        @TypeMapper(perField = "if (${sourceFields} != null) ${target}.${targetField}(${func}(${sourceField}()))")
         YourTarget map(YourSource y);
     }
+
+Take a look at [the @TypeMapper annotation souce](https://github.com/bavelsoft/typemapper/blob/master/src/main/java/com/bavelsoft/typemapper/TypeMap.java) source to the default generated code templates, and how to customize them.
 
 If you'd like to use dependency injection, define abstract getter methods and wire up the generated class properly.
 
